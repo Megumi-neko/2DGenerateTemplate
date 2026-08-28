@@ -1,0 +1,22 @@
+{
+  "name": "Game.DayNight.Tests",
+  "rootNamespace": "Game.DayNight.Tests",
+  "references": [
+    "GUID:5d6e7f8091a2b3c4d5e6f708192a3b4c",
+    "GUID:4c5d6e7f8091a2b3c4d5e6f708192a3b"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
