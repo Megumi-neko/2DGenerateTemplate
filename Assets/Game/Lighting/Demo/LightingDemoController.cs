@@ -8,7 +8,7 @@ namespace Game.Lighting.Demo
         private const float GameplayPlaneZ = 0f;
 
         [SerializeField] private Camera targetCamera;
-        [SerializeField] private LightEmitter2D controlledLight;
+        private LightEmitter2D controlledLight;
         [SerializeField, Min(1f)] private float angleStep = 10f;
 
         private Vector2 pointerWorldPosition;
@@ -100,6 +100,7 @@ namespace Game.Lighting.Demo
             GUILayout.Label($"Shape: {controlledLight.Shape}");
             GUILayout.Label($"Sector angle: {controlledLight.SectorAngle:F1} degrees");
             GUILayout.Label($"Effective range: {controlledLight.EffectiveRange:F2}");
+            GUILayout.Label($"Inner circle range: {GetInnerCircleRange():F2}");
             GUILayout.Label(
                 $"Area: {controlledLight.EffectiveArea:F2} " +
                 $"(baseline {controlledLight.BaselineArea:F2})");
@@ -116,6 +117,12 @@ namespace Game.Lighting.Demo
             }
 
             GUILayout.EndArea();
+        }
+
+        private float GetInnerCircleRange()
+        {
+            InnerCircleLight2D innerCircle = controlledLight.GetComponent<InnerCircleLight2D>();
+            return innerCircle == null ? 0f : innerCircle.InnerRadius;
         }
 
         private bool TryGetPointerWorldPosition(out Vector2 worldPosition)

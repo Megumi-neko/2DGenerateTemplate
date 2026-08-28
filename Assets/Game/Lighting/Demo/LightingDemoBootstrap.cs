@@ -111,6 +111,9 @@ namespace Game.Lighting.Demo
             ControlledLight.MaximumFocusMultiplier = 2.25f;
             ControlledLight.Direction = Vector2.right;
 
+            InnerCircleLight2D innerCircle = ControlledLight.gameObject.AddComponent<InnerCircleLight2D>();
+            innerCircle.RadiusMultiplier = 0.5f;
+
             SecondaryLight = CreateEmitter(
                 "Secondary Candle Light",
                 new Vector2(4f, 1.25f),
@@ -138,6 +141,9 @@ namespace Game.Lighting.Demo
             emitter.BaseIntensity = 1f;
             emitter.BaseDamagePerSecond = damagePerSecond;
             emitter.EdgeSoftness = 0.35f;
+
+            InnerCircleLight2D innerCircle = emitterObject.AddComponent<InnerCircleLight2D>();
+            innerCircle.RadiusMultiplier = 0.5f;
 
             CreateQuad(
                 "Candle Marker",
