@@ -13,10 +13,12 @@ MonoBehaviour:
   m_Name: SceneHistory
   m_EditorClassIdentifier: 
   _items:
-  - name: LightingDemo
-    path: Assets/Scenes/LightingDemo.unity
   - name: Stage
     path: Assets/Scenes/Stage.unity
+  - name: Stage 1
+    path: Assets/Scenes/Stage 1.unity
+  - name: LightingDemo
+    path: Assets/Scenes/LightingDemo.unity
   - name: SampleScene
     path: Assets/Scenes/SampleScene.unity
   - name: MainMenu
@@ -49,5 +51,3 @@ MonoBehaviour:
     path: Assets/Resources/ThirdParty/Vector Forest Scenery/Demo/Scenes/Collection.unity
   - name: Collection
     path: Assets/ccadori/Vector Forest Scenery/Demo/Scenes/Collection.unity
-  - name: Demo
-    path: Assets/ccadori/Vector Forest Scenery/Demo/Scenes/Demo.unity
