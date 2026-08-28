@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: SceneHistory
   m_EditorClassIdentifier: 
   _items:
+  - name: Stage
+    path: Assets/Scenes/Stage.unity
   - name: DayTime_DemoScene
     path: Assets/HyperLuminal/2D Fantasy Forest Tileset/Scenes/DayTime_DemoScene.unity
   - name: NightTime_DemoScene
     path: Assets/HyperLuminal/2D Fantasy Forest Tileset/Scenes/NightTime_DemoScene.unity
-  - name: Stage
-    path: Assets/Scenes/Stage.unity
   - name: Epic_GloriousPink
     path: Assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink.unity
   - name: Cold Night
