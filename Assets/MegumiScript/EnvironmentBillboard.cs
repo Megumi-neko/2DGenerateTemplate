@@ -21,7 +21,10 @@ public class EnvironmentBillboard : MonoBehaviour
     [SerializeField] private bool autoCollectSpriteRenderers = true;
     [SerializeField] private bool includeInactive = false;
     [SerializeField] private bool includeMeshRenderers = false;
-    [SerializeField] private Renderer[] additionalTargets;
+    [SerializeField] private Renderer[] additionalTargets;    [Header("Culling")]
+    [SerializeField] private bool disableOcclusionCulling = true;
+
+
 
     [Header("Billboard")]
     [SerializeField] private BillboardMode mode = BillboardMode.Full;
@@ -96,7 +99,18 @@ public class EnvironmentBillboard : MonoBehaviour
         var uniqueTransforms = new List<Transform>();
         foreach (Renderer renderer in renderers)
         {
-            if (renderer == null || renderer.transform == transform || uniqueTransforms.Contains(renderer.transform))
+            if (renderer == null)
+            {
+                continue;
+            }
+
+            // A billboard changes its rotation at runtime, so dynamic occlusion can use stale bounds.
+            if (disableOcclusionCulling)
+            {
+                renderer.allowOcclusionWhenDynamic = false;
+            }
+
+            if (renderer.transform == transform || uniqueTransforms.Contains(renderer.transform))
             {
                 continue;
             }
