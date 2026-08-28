@@ -1,0 +1,19 @@
+{
+  "name": "Game.Lighting.Editor",
+  "rootNamespace": "Game.Lighting.Editor",
+  "references": [
+    "Game.Lighting",
+    "Game.Lighting.Demo"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

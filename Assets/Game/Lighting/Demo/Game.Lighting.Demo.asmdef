@@ -1,0 +1,16 @@
+{
+  "name": "Game.Lighting.Demo",
+  "rootNamespace": "Game.Lighting.Demo",
+  "references": [
+    "Game.Lighting"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
