@@ -27,7 +27,7 @@ namespace Game.Lighting.Demo
                 controller = gameObject.AddComponent<LightingDemoController>();
             }
 
-            controller.Initialize(targetCamera, ControlledLight, SecondaryLight);
+            controller.Initialize(targetCamera, ControlledLight);
         }
 
         private void OnDestroy()
@@ -119,7 +119,7 @@ namespace Game.Lighting.Demo
                 secondaryMarkerMaterial);
             SecondaryLight.Shape = LightShape2D.Circle;
             SecondaryLight.BaseIntensity = 0.8f;
-            SecondaryLight.SetEmitting(false);
+            SecondaryLight.SetEmitting(true);
         }
 
         private LightEmitter2D CreateEmitter(

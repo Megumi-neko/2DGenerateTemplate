@@ -82,11 +82,11 @@ float lightDps = IlluminationSystem.GetDamagePerSecond(enemyPosition);
 
 通过菜单 `Tools > Game Lighting > Create Demo Scene` 可重新生成演示场景。进入 Play Mode 后：
 
-- 移动鼠标：改变扇形方向。
+- 移动鼠标：改变扇形方向；锁定后不会再改变。
 - 滚轮：改变扇形角度。
 - `Space`：切换圆形/扇形。
-- `L`：启用/关闭第二个光源。
-- `R`：重置主光源。
+- `F`：锁定或恢复鼠标跟随。
+- 演示中的其他光源始终保持点亮。
 
 演示场景及其运行时生成内容不引用 `Stage.unity` 或 Stage 中的资源。
 
