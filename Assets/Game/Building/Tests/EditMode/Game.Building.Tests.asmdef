@@ -1,0 +1,23 @@
+{
+  "name": "Game.Building.Tests",
+  "rootNamespace": "Game.Building.Tests",
+  "references": [
+    "GUID:6e7f8091a2b3c4d5e6f708192a3b4c5d",
+    "GUID:4c5d6e7f8091a2b3c4d5e6f708192a3b",
+    "GUID:5d6e7f8091a2b3c4d5e6f708192a3b4c"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

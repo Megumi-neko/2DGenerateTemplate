@@ -1668,6 +1668,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dayNightSystem: {fileID: 2100000003}
+  coinInventory: {fileID: 3100000004}
   initialCoinCount: 0
   coinText: {fileID: 647025029}
   dayText: {fileID: 781902980}
@@ -61077,6 +61078,114 @@ MonoBehaviour:
   - 7
   - 11
   useUnscaledTime: 0
+--- !u!1 &3100000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3100000002}
+  - component: {fileID: 3100000003}
+  - component: {fileID: 3100000004}
+  - component: {fileID: 3100000005}
+  - component: {fileID: 3100000006}
+  - component: {fileID: 3100000007}
+  m_Layer: 0
+  m_Name: Building System
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3100000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3100000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 556677889900aabbccddeeff11223344, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  grid: {fileID: 0}
+  buildableTilemap: {fileID: 0}
+--- !u!114 &3100000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44556677889900aabbccddeeff112233, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  initialCoins: 20
+--- !u!114 &3100000005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77889900aabbccddeeff112233445566, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  buildGrid: {fileID: 0}
+  dayNightSystem: {fileID: 0}
+  coinInventory: {fileID: 3100000004}
+  buildingsRoot: {fileID: 3100000002}
+  defaultDefinition: {fileID: 11400000, guid: bbccddeeff00112233445566778899aa, type: 2}
+--- !u!114 &3100000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 889900aabbccddeeff11223344556677, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+--- !u!114 &3100000007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9900aabbccddeeff1122334455667788, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  buildSystem: {fileID: 3100000005}
+  buildPreview: {fileID: 3100000006}
+  lookoutTower: {fileID: 11400000, guid: bbccddeeff00112233445566778899aa, type: 2}
+  targetCamera: {fileID: 0}
+  stageUIController: {fileID: 452546530}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -61087,3 +61196,4 @@ SceneRoots:
   - {fileID: 2100000002}
   - {fileID: 452546529}
   - {fileID: 336561125}
+  - {fileID: 3100000002}

@@ -1,4 +1,5 @@
 using System;
+using Game.Building;
 using Game.DayNight;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,6 +19,7 @@ namespace Game.UI
     {
         [Header("Data")]
         [SerializeField] private DayNightSystem dayNightSystem;
+        [SerializeField] private CoinInventory coinInventory;
         [SerializeField] private int initialCoinCount;
         [SerializeField] private Text coinText;
         [SerializeField] private Text dayText;
@@ -40,6 +42,7 @@ namespace Game.UI
         private bool eventsSubscribed;
 
         public int CoinCount => coinCount;
+        public GameObject ConstructPanel => constructPanel;
         public bool IsSettingsOpen => settingsPanel != null && settingsPanel.activeSelf;
         public bool IsConstructOpen => constructPanel != null && constructPanel.activeSelf;
 
@@ -49,7 +52,14 @@ namespace Game.UI
 
         private void Awake()
         {
-            coinCount = Mathf.Max(0, initialCoinCount);
+            if (coinInventory == null)
+            {
+                coinInventory = FindObjectOfType<CoinInventory>();
+            }
+
+            coinCount = coinInventory == null
+                ? Mathf.Max(0, initialCoinCount)
+                : coinInventory.Coins;
             ConfigureButtonListeners();
             CloseSettings();
             CloseConstruct();
@@ -58,9 +68,21 @@ namespace Game.UI
                 dayNightSystem == null ? 1 : dayNightSystem.CurrentDay);
         }
 
+        private void Start()
+        {
+            if (coinInventory != null)
+            {
+                RefreshCoinCount(coinInventory.Coins);
+            }
+        }
+
         private void OnEnable()
         {
             SubscribeToEvents();
+            if (coinInventory != null)
+            {
+                coinInventory.CoinsChanged += OnCoinsChanged;
+            }
             if (dayNightSystem != null)
             {
                 RefreshDayNight(dayNightSystem.CurrentPhase, dayNightSystem.CurrentDay);
@@ -70,6 +92,10 @@ namespace Game.UI
         private void OnDisable()
         {
             UnsubscribeFromEvents();
+            if (coinInventory != null)
+            {
+                coinInventory.CoinsChanged -= OnCoinsChanged;
+            }
         }
 
         private void Update()
@@ -93,6 +119,12 @@ namespace Game.UI
 
         public void SetCoinCount(int count)
         {
+            if (coinInventory != null)
+            {
+                coinInventory.SetCoins(count);
+                return;
+            }
+
             RefreshCoinCount(count);
         }
 
@@ -187,6 +219,11 @@ namespace Game.UI
             EventBus.Instance.UnSubscribe<DayNightStateChanged>(OnDayNightStateChanged);
             EventBus.Instance.UnSubscribe<DayNightCompleted>(OnDayNightCompleted);
             eventsSubscribed = false;
+        }
+
+        private void OnCoinsChanged(int count)
+        {
+            RefreshCoinCount(count);
         }
 
         private void OnDayNightStateChanged(DayNightStateChanged state)
