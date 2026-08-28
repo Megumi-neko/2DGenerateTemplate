@@ -13,8 +13,14 @@ MonoBehaviour:
   m_Name: SceneHistory
   m_EditorClassIdentifier: 
   _items:
+  - name: LightingDemo
+    path: Assets/Scenes/LightingDemo.unity
   - name: Stage
     path: Assets/Scenes/Stage.unity
+  - name: SampleScene
+    path: Assets/Scenes/SampleScene.unity
+  - name: MainMenu
+    path: Assets/Scenes/MainMenu.unity
   - name: DayTime_DemoScene
     path: Assets/HyperLuminal/2D Fantasy Forest Tileset/Scenes/DayTime_DemoScene.unity
   - name: NightTime_DemoScene
@@ -45,5 +51,3 @@ MonoBehaviour:
     path: Assets/ccadori/Vector Forest Scenery/Demo/Scenes/Collection.unity
   - name: Demo
     path: Assets/ccadori/Vector Forest Scenery/Demo/Scenes/Demo.unity
-  - name: SampleScene
-    path: Assets/Scenes/SampleScene.unity

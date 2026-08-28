@@ -9,21 +9,31 @@ namespace Game.Lighting.Demo
 
         [SerializeField] private Camera targetCamera;
         [SerializeField] private LightEmitter2D controlledLight;
-        [SerializeField] private LightEmitter2D secondaryLight;
         [SerializeField, Min(1f)] private float angleStep = 10f;
 
         private Vector2 pointerWorldPosition;
         private IlluminationSample pointerSample;
         private bool hasPointerWorldPosition;
+        private bool isAimLocked;
+
+        public bool IsAimLocked => isAimLocked;
+
+        public void ToggleAimLock()
+        {
+            isAimLocked = !isAimLocked;
+        }
+
+        public void SetAimLocked(bool value)
+        {
+            isAimLocked = value;
+        }
 
         public void Initialize(
             Camera cameraToUse,
-            LightEmitter2D primary,
-            LightEmitter2D secondary)
+            LightEmitter2D primary)
         {
             targetCamera = cameraToUse;
             controlledLight = primary;
-            secondaryLight = secondary;
         }
 
         private void Update()
@@ -43,28 +53,25 @@ namespace Game.Lighting.Demo
                 controlledLight.ToggleShape();
             }
 
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                ToggleAimLock();
+            }
+
             float scroll = Input.mouseScrollDelta.y;
             if (Mathf.Abs(scroll) > 0.001f)
             {
                 controlledLight.SectorAngle -= scroll * angleStep;
             }
 
-            if (Input.GetKeyDown(KeyCode.L) && secondaryLight != null)
-            {
-                secondaryLight.SetEmitting(!secondaryLight.IsEmitting);
-            }
-
-            if (Input.GetKeyDown(KeyCode.R))
-            {
-                controlledLight.Shape = LightShape2D.Sector;
-                controlledLight.SectorAngle = 90f;
-                controlledLight.Direction = Vector2.right;
-            }
-
             hasPointerWorldPosition = TryGetPointerWorldPosition(out pointerWorldPosition);
             if (hasPointerWorldPosition)
             {
-                controlledLight.SetDirectionTowards(pointerWorldPosition);
+                if (!isAimLocked)
+                {
+                    controlledLight.SetDirectionTowards(pointerWorldPosition);
+                }
+
                 pointerSample = IlluminationSystem.Sample(pointerWorldPosition);
             }
             else
@@ -81,13 +88,14 @@ namespace Game.Lighting.Demo
             }
 
             const float width = 370f;
-            const float height = 300f;
+            const float height = 340f;
             GUILayout.BeginArea(new Rect(16f, 16f, width, height), GUI.skin.box);
             GUILayout.Label("2.5D Candle Lighting Demo");
             GUILayout.Space(4f);
             GUILayout.Label("Move mouse: aim sector");
             GUILayout.Label("Mouse wheel: change sector angle");
-            GUILayout.Label("Space: circle / sector    L: secondary light    R: reset");
+            GUILayout.Label("Space: circle / sector    F: lock / unlock aim");
+            GUILayout.Label($"Aim: {(isAimLocked ? "LOCKED" : "FOLLOWING MOUSE")}");
             GUILayout.Space(8f);
             GUILayout.Label($"Shape: {controlledLight.Shape}");
             GUILayout.Label($"Sector angle: {controlledLight.SectorAngle:F1} degrees");
