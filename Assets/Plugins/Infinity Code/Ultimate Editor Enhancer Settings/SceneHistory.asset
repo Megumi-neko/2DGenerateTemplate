@@ -12,4 +12,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b1ad13bf0912354e82f29889c32b57b, type: 3}
   m_Name: SceneHistory
   m_EditorClassIdentifier: 
-  _items: []
+  _items:
+  - name: Epic_GloriousPink
+    path: Assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink.unity
+  - name: Cold Night
+    path: Assets/AllSkyFree/Cold Night/Cold Night.unity
+  - name: Cold Sunset
+    path: Assets/AllSkyFree/Cold Sunset/Cold Sunset.unity
+  - name: Epic_BlueSunset
+    path: Assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset.unity
+  - name: AllSky_Overcast4_Low
+    path: Assets/AllSkyFree/Overcast Low/AllSky_Overcast4_Low.unity
+  - name: AllSky_Space_AnotherPlanet
+    path: Assets/AllSkyFree/Space_AnotherPlanet/AllSky_Space_AnotherPlanet.unity
+  - name: Cartoon Base NightSky
+    path: Assets/AllSkyFree/Cartoon Base NightSky/Cartoon Base NightSky.unity
+  - name: Deep Dusk
+    path: Assets/AllSkyFree/Deep Dusk/Deep Dusk.unity
+  - name: Night Moon Burst
+    path: Assets/AllSkyFree/Night MoonBurst/Night Moon Burst.unity
+  - name: Day_BlueSky_Nothing
+    path: Assets/AllSkyFree/Cartoon Base BlueSky/Day_BlueSky_Nothing.unity
+  - name: Stage
+    path: Assets/Scenes/Stage.unity
+  - name: Collection
+    path: Assets/Resources/ThirdParty/Vector Forest Scenery/Demo/Scenes/Collection.unity
+  - name: Collection
+    path: Assets/ccadori/Vector Forest Scenery/Demo/Scenes/Collection.unity
+  - name: Demo
+    path: Assets/ccadori/Vector Forest Scenery/Demo/Scenes/Demo.unity
+  - name: SampleScene
+    path: Assets/Scenes/SampleScene.unity
