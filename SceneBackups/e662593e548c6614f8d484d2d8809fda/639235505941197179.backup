@@ -57552,7 +57552,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1388045008}
   - component: {fileID: 1388045007}
-  - component: {fileID: 1388045009}
   m_Layer: 0
   m_Name: Grid
   m_TagString: Untagged
@@ -57588,38 +57587,6 @@ Transform:
   - {fileID: 1146664608}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1388045009
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1388045006}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9cc9924270fbd5143847e23e5ff4189d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetCamera: {fileID: 0}
-  gameplayPlaneZ: 0
-  darknessOpacity: 1
-  candleWorldPosition: {x: 0, y: 0}
-  candleWorldZ: -0.15
-  baseRadius: 5
-  sectorAngle: 90
-  minimumSectorAngle: 36
-  baseIntensity: 1
-  baseDamagePerSecond: 12
-  maximumFocusMultiplier: 2.25
-  edgeSoftness: 0.35
-  innerRadiusMultiplier: 0.5
-  candleVisualPrefab: {fileID: 0}
-  candleSprite: {fileID: 21300000, guid: 864c4e01f8c1f3a4c808c7a2a91c80b5, type: 3}
-  flameSprite: {fileID: 0}
-  candleVisualLocalPosition: {x: 0, y: 0.73, z: -0.06}
-  candleVisualLocalEulerAngles: {x: 0, y: 0, z: 0}
-  candleVisualLocalScale: {x: 0.15, y: 0.15, z: 0.15}
-  visualSortingOrder: 10
 --- !u!1001 &1435565953
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -58509,7 +58476,6 @@ GameObject:
   - component: {fileID: 1848669776}
   - component: {fileID: 1848669775}
   - component: {fileID: 1848669774}
-  - component: {fileID: 1848669777}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -58585,30 +58551,12 @@ Transform:
   m_GameObject: {fileID: 1848669773}
   serializedVersion: 2
   m_LocalRotation: {x: -0.258819, y: 0, z: 0, w: 0.9659259}
-  m_LocalPosition: {x: 0, y: -6.38, z: -7}
+  m_LocalPosition: {x: 0, y: 0, z: -7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -30, y: 0, z: 0}
---- !u!114 &1848669777
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1848669773}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c97c6bad4bbec04ab12144051372cd8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  darknessShader: {fileID: 4800000, guid: dea08432c9dd8af44873aa665f7c2b51, type: 3}
-  darknessColor: {r: 0.01, g: 0.015, b: 0.025, a: 1}
-  darknessOpacity: 1
-  gameplayPlaneZ: 0
-  maximumVisibleLights: 32
-  warnWhenLightLimitExceeded: 1
 --- !u!1001 &1889720775
 PrefabInstance:
   m_ObjectHideFlags: 0
