@@ -82,32 +82,32 @@ namespace Game.Lighting.Tests
             Assert.That(IlluminationSystem.Sample(Vector2.zero).IsLit, Is.False);
         }
 
-        [Test]
-        public void MinimumSectorAngle_AppliesMaximumFocusMultiplierAndPreservesArea()
+[Test]
+        public void MinimumSectorAngle_AppliesMaximumFocusMultiplierAndAttenuatesArea()
         {
             LightEmitter2D emitter = CreateEmitter(Vector2.zero, 4f, 1f, 10f);
             emitter.Shape = LightShape2D.Sector;
-            emitter.MinimumSectorAngle = 60f;
-            emitter.SectorAngle = 60f;
+            emitter.MinimumSectorAngle = 10f;
+            emitter.SectorAngle = 10f;
             emitter.MaximumFocusMultiplier = 2.5f;
 
             Assert.That(emitter.FocusMultiplier, Is.EqualTo(2.5f).Within(0.0001f));
             Assert.That(emitter.CurrentDamagePerSecond, Is.EqualTo(25f).Within(0.0001f));
-            Assert.That(emitter.EffectiveArea, Is.EqualTo(emitter.BaselineArea).Within(0.0001f));
+            Assert.That(emitter.EffectiveRange, Is.EqualTo(8f).Within(0.0001f));
+            Assert.That(emitter.EffectiveArea, Is.LessThan(emitter.BaselineArea));
         }
 
-        [Test]
-        public void MaximumEffectiveRange_UsesMinimumSectorAngle()
+[Test]
+        public void MaximumEffectiveRange_UsesBoundedMinimumSectorAngle()
         {
             LightEmitter2D emitter = CreateEmitter(Vector2.zero, 5f, 1f, 10f);
             emitter.Shape = LightShape2D.Sector;
-            emitter.MinimumSectorAngle = 36f;
+            emitter.MinimumSectorAngle = 10f;
             emitter.SectorAngle = 90f;
 
-            Assert.That(
-                emitter.MaximumEffectiveRange,
-                Is.EqualTo(5f * Mathf.Sqrt(10f)).Within(0.0001f));
+            Assert.That(emitter.MaximumEffectiveRange, Is.EqualTo(10f).Within(0.0001f));
             Assert.That(emitter.MaximumEffectiveRange, Is.GreaterThan(emitter.EffectiveRange));
+            Assert.That(emitter.MaximumEffectiveRange, Is.LessThanOrEqualTo(10f));
         }
 
         [Test]
@@ -296,8 +296,8 @@ namespace Game.Lighting.Tests
             Assert.That(bootstrap.RangeUpgradeLevel, Is.EqualTo(3));
         }
 
-        [Test]
-        public void StageLightingCameraFramer_ExpandsTargetAfterRangeUpgrade()
+[Test]
+        public void StageLightingCameraFramer_RisesAndExpandsTargetAfterRangeUpgrade()
         {
             GameObject cameraObject = new GameObject("Test Framing Camera");
             GameObject emitterObject = new GameObject("Test Framing Emitter");
@@ -311,7 +311,7 @@ namespace Game.Lighting.Tests
             LightEmitter2D emitter = emitterObject.AddComponent<LightEmitter2D>();
             emitter.BaseRadius = 4f;
             emitter.Shape = LightShape2D.Sector;
-            emitter.MinimumSectorAngle = 60f;
+            emitter.MinimumSectorAngle = 10f;
             emitter.SectorAngle = 90f;
             emitter.Direction = Vector2.right;
 
@@ -323,6 +323,7 @@ namespace Game.Lighting.Tests
             emitter.BaseRadius = 7f;
             framer.ReframeImmediately();
 
+            Assert.That(framer.TargetPosition.y, Is.LessThanOrEqualTo(initialTarget.y + 0.0001f));
             Assert.That(framer.TargetPosition.z, Is.LessThan(initialTarget.z));
         }
 

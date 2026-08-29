@@ -111,5 +111,27 @@ namespace Game.Lighting.Tests
                 LightGeometry2D.CalculateFocus01(LightShape2D.Circle, 60f, 60f),
                 Is.Zero);
         }
-    }
+
+
+[Test]
+        public void AttenuatedRange_IsBoundedAndLosesAreaAtMinimumAngle()
+        {
+            float fullCircleRange = LightGeometry2D.CalculateAttenuatedRange(Radius, 360f);
+            float minimumRange = LightGeometry2D.CalculateAttenuatedRange(Radius, 10f);
+            float narrowArea = LightGeometry2D.CalculateSectorArea(minimumRange, 10f);
+            float circleArea = LightGeometry2D.CalculateCircleArea(Radius);
+
+            Assert.That(fullCircleRange, Is.EqualTo(Radius).Within(0.0001f));
+            Assert.That(minimumRange, Is.EqualTo(Radius * 2f).Within(0.0001f));
+            Assert.That(minimumRange, Is.LessThanOrEqualTo(Radius * 2f));
+            Assert.That(narrowArea, Is.LessThan(circleArea));
+        }
+
+        [Test]
+        public void ClampMinimumSectorAngle_UsesTenDegreeFloor()
+        {
+            Assert.That(LightGeometry2D.ClampMinimumSectorAngle(1f), Is.EqualTo(10f));
+            Assert.That(LightGeometry2D.ClampSectorAngle(1f, 10f), Is.EqualTo(10f));
+        }
+}
 }

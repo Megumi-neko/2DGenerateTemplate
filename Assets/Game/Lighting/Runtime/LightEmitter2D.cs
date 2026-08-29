@@ -14,7 +14,7 @@ namespace Game.Lighting
         [SerializeField] private LightShape2D shape = LightShape2D.Circle;
         [SerializeField, Min(MinimumRadius)] private float baseRadius = 4f;
         [SerializeField, Range(1f, LightGeometry2D.FullCircleAngle)] private float sectorAngle = 90f;
-        [SerializeField, Range(1f, LightGeometry2D.FullCircleAngle)] private float minimumSectorAngle = 60f;
+        [SerializeField, Range(LightGeometry2D.DefaultMinimumSectorAngle, LightGeometry2D.FullCircleAngle)] private float minimumSectorAngle = LightGeometry2D.DefaultMinimumSectorAngle;
         [SerializeField] private Vector2 direction = Vector2.right;
 
         [Header("Output")]
@@ -187,10 +187,11 @@ namespace Game.Lighting
 
         public float EffectiveRange => shape == LightShape2D.Circle
             ? baseRadius
-            : LightGeometry2D.CalculateEqualAreaRange(baseRadius, sectorAngle);
+            : LightGeometry2D.CalculateAttenuatedRange(baseRadius, sectorAngle);
 
-        public float MaximumEffectiveRange =>
-            LightGeometry2D.CalculateEqualAreaRange(baseRadius, minimumSectorAngle);
+        public float MaximumEffectiveRange => shape == LightShape2D.Circle
+            ? baseRadius
+            : LightGeometry2D.CalculateAttenuatedRange(baseRadius, minimumSectorAngle);
 
         public float BaselineArea => LightGeometry2D.CalculateCircleArea(baseRadius);
 

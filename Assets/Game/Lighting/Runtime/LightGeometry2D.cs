@@ -5,7 +5,7 @@ namespace Game.Lighting
     public static class LightGeometry2D
     {
         public const float FullCircleAngle = 360f;
-        public const float DefaultMinimumSectorAngle = 60f;
+        public const float DefaultMinimumSectorAngle = 10f;
 
         private const float Epsilon = 0.0001f;
 
@@ -16,7 +16,7 @@ namespace Game.Lighting
                 return DefaultMinimumSectorAngle;
             }
 
-            return Mathf.Clamp(minimumSectorAngle, 1f, FullCircleAngle);
+            return Mathf.Clamp(minimumSectorAngle, DefaultMinimumSectorAngle, FullCircleAngle);
         }
 
         public static float ClampSectorAngle(float sectorAngle, float minimumSectorAngle)
@@ -39,6 +39,19 @@ namespace Game.Lighting
                 FullCircleAngle);
 
             return radius * Mathf.Sqrt(FullCircleAngle / angle);
+        }
+
+        public static float CalculateAttenuatedRange(float baseRadius, float sectorAngle)
+        {
+            float radius = SanitizeNonNegative(baseRadius);
+            float angle = Mathf.Clamp(
+                IsFinite(sectorAngle) ? sectorAngle : FullCircleAngle,
+                DefaultMinimumSectorAngle,
+                FullCircleAngle);
+            float focus01 = (FullCircleAngle - angle) /
+                (FullCircleAngle - DefaultMinimumSectorAngle);
+            float rangeMultiplier = Mathf.Lerp(1f, 2f, Mathf.Clamp01(focus01));
+            return radius * rangeMultiplier;
         }
 
         public static float CalculateCircleArea(float radius)
@@ -185,7 +198,7 @@ namespace Game.Lighting
         {
             float angle = Mathf.Clamp(
                 IsFinite(sectorAngle) ? sectorAngle : FullCircleAngle,
-                1f,
+                DefaultMinimumSectorAngle,
                 FullCircleAngle);
             float sanitizedRange = Mathf.Max(Epsilon, SanitizeNonNegative(range));
             float softness = Mathf.Clamp(SanitizeNonNegative(edgeSoftness), 0f, sanitizedRange);

@@ -43,6 +43,8 @@ namespace Game.UI
         [SerializeField] private GameObject constructPanel;
         [SerializeField] private Button intensityUpgradeButton;
         [SerializeField] private Button rangeUpgradeButton;
+        [SerializeField] private Text intensityUpgradeText;
+        [SerializeField] private Text rangeUpgradeText;
         [SerializeField] private StageLightingBootstrap stageLightingBootstrap;
         [SerializeField, Min(0)] private int baseIntensityUpgradeCost = 2;
         [SerializeField, Min(0)] private int baseRangeUpgradeCost = 2;
@@ -400,7 +402,7 @@ private void OnEnable()
             RefreshUpgradeButtons();
         }
 
-        private void ResolveUpgradeButtons()
+private void ResolveUpgradeButtons()
         {
             if (stageLightingBootstrap == null)
             {
@@ -422,6 +424,16 @@ private void OnEnable()
             {
                 Transform button = constructPanel.transform.Find("LengthUp");
                 rangeUpgradeButton = button == null ? null : button.GetComponent<Button>();
+            }
+
+            if (intensityUpgradeText == null && intensityUpgradeButton != null)
+            {
+                intensityUpgradeText = intensityUpgradeButton.GetComponentInChildren<Text>(true);
+            }
+
+            if (rangeUpgradeText == null && rangeUpgradeButton != null)
+            {
+                rangeUpgradeText = rangeUpgradeButton.GetComponentInChildren<Text>(true);
             }
         }
 
@@ -445,13 +457,18 @@ private void OnEnable()
             }
         }
 
-        private bool TrySpendUpgrade(int baseCost, int level)
+private bool TrySpendUpgrade(int baseCost, int level)
         {
-            int cost = Mathf.Max(0, baseCost) * (Mathf.Max(0, level) + 1);
-            return coinInventory == null || coinInventory.TrySpend(cost);
+            return coinInventory == null || coinInventory.TrySpend(CalculateUpgradeCost(baseCost, level));
         }
 
-        private void RefreshUpgradeButtons()
+        private static int CalculateUpgradeCost(int baseCost, int level)
+        {
+            long cost = (long)Mathf.Max(0, baseCost) * (Mathf.Max(0, level) + 1);
+            return cost > int.MaxValue ? int.MaxValue : (int)cost;
+        }
+
+private void RefreshUpgradeButtons()
         {
             if (stageLightingBootstrap == null)
             {
@@ -459,12 +476,31 @@ private void OnEnable()
             }
 
             bool isDay = dayNightSystem == null || dayNightSystem.CurrentPhase == DayNightPhase.Day;
-            SetInteractable(intensityUpgradeButton, isDay &&
-                stageLightingBootstrap.IntensityUpgradeLevel < stageLightingBootstrap.MaximumIntensityUpgradeLevel &&
-                coinCount >= Mathf.Max(0, baseIntensityUpgradeCost) * (stageLightingBootstrap.IntensityUpgradeLevel + 1));
-            SetInteractable(rangeUpgradeButton, isDay &&
-                stageLightingBootstrap.RangeUpgradeLevel < stageLightingBootstrap.MaximumRangeUpgradeLevel &&
-                coinCount >= Mathf.Max(0, baseRangeUpgradeCost) * (stageLightingBootstrap.RangeUpgradeLevel + 1));
+            bool canUpgradeIntensity = stageLightingBootstrap.IntensityUpgradeLevel <
+                stageLightingBootstrap.MaximumIntensityUpgradeLevel;
+            bool canUpgradeRange = stageLightingBootstrap.RangeUpgradeLevel <
+                stageLightingBootstrap.MaximumRangeUpgradeLevel;
+            int intensityCost = CalculateUpgradeCost(
+                baseIntensityUpgradeCost,
+                stageLightingBootstrap.IntensityUpgradeLevel);
+            int rangeCost = CalculateUpgradeCost(
+                baseRangeUpgradeCost,
+                stageLightingBootstrap.RangeUpgradeLevel);
+
+            SetUpgradeLabel(intensityUpgradeText, "质量升级：", intensityCost, canUpgradeIntensity);
+            SetUpgradeLabel(rangeUpgradeText, "高度升级：", rangeCost, canUpgradeRange);
+            SetInteractable(intensityUpgradeButton, isDay && canUpgradeIntensity &&
+                coinCount >= intensityCost);
+            SetInteractable(rangeUpgradeButton, isDay && canUpgradeRange &&
+                coinCount >= rangeCost);
+        }
+
+        private static void SetUpgradeLabel(Text label, string prefix, int cost, bool canUpgrade)
+        {
+            if (label != null)
+            {
+                label.text = canUpgrade ? $"{prefix}{cost}" : $"{prefix}已满级";
+            }
         }
 
         private void EnsureDayNightLightingController()

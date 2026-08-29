@@ -3700,6 +3700,8 @@ MonoBehaviour:
   constructPanel: {fileID: 1466794797}
   intensityUpgradeButton: {fileID: 1770240906}
   rangeUpgradeButton: {fileID: 1837675107}
+  intensityUpgradeText: {fileID: 911759688}
+  rangeUpgradeText: {fileID: 1447503729}
   stageLightingBootstrap: {fileID: 1388045010}
   baseIntensityUpgradeCost: 2
   baseRangeUpgradeCost: 2
@@ -61012,13 +61014,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1848669773}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.258819, y: 0, z: 0, w: 0.9659259}
-  m_LocalPosition: {x: 0, y: -6.38, z: -7}
+  m_LocalRotation: {x: -0.17364825, y: 0, z: 0, w: 0.9848078}
+  m_LocalPosition: {x: 0, y: -3, z: -7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: -30, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -20, y: 0, z: 0}
 --- !u!114 &1848669777
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61049,14 +61051,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cb0d7ba9e4c4ec6b3d8c1d08f146c37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  screenPadding: 0.1
+  screenPadding: 0.02
   framingCenterBias: 0.12
-  boundaryPadding: 0.2
+  visibleRangeFraction: 1
+  boundaryPadding: 0
   smoothTime: 0.2
   targetChangeThreshold: 0.05
   boundarySegments: 32
-  maximumFramingOffset: 6
-  maximumCameraRise: 1.5
+  maximumFramingOffset: 20
+  cameraRisePerRange: 0
+  maximumCameraRise: 0
   maximumCameraBackstep: 80
   enforceSafeViewportDuringMotion: 1
 --- !u!1 &1870833786

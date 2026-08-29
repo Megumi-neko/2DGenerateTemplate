@@ -17,6 +17,7 @@ namespace Game.Lighting
         private float screenPadding = 0.1f;
         [SerializeField, Range(0f, 1f)]
         private float framingCenterBias = 0.12f;
+        [SerializeField, Range(0.25f, 1f)] private float visibleRangeFraction = 0.5f;
         [SerializeField, Min(0f)] private float boundaryPadding = 0.2f;
         [SerializeField, Min(0.01f)] private float smoothTime = 0.2f;
         [SerializeField, Min(0f)] private float targetChangeThreshold = 0.05f;
@@ -24,7 +25,8 @@ namespace Game.Lighting
 
         [Header("Safety Limits")]
         [SerializeField, Min(0f)] private float maximumFramingOffset = 6f;
-        [SerializeField, Min(0f)] private float maximumCameraRise = 1.5f;
+        [SerializeField, Min(0f)] private float cameraRisePerRange = 0f;
+        [SerializeField, Min(0f)] private float maximumCameraRise = 0f;
         [SerializeField, Min(0f)] private float maximumCameraBackstep = 80f;
         [SerializeField] private bool enforceSafeViewportDuringMotion = true;
 
@@ -37,6 +39,7 @@ namespace Game.Lighting
         private Quaternion initialRotation;
         private Vector3 positionVelocity;
         private Vector3 targetPosition;
+        private float initialBaseRadius;
         private bool initialized;
         private bool manualMode;
 
@@ -56,7 +59,7 @@ namespace Game.Lighting
             }
         }
 
-        public void Initialize(Camera cameraToUse, LightEmitter2D emitterToFrame, float planeZ)
+public void Initialize(Camera cameraToUse, LightEmitter2D emitterToFrame, float planeZ)
         {
             targetCamera = cameraToUse;
             emitter = emitterToFrame;
@@ -75,6 +78,7 @@ namespace Game.Lighting
             {
                 initialPosition = targetCamera.transform.position;
                 initialRotation = targetCamera.transform.rotation;
+                initialBaseRadius = emitter == null ? 0f : emitter.BaseRadius;
                 initialized = true;
             }
 
@@ -91,6 +95,7 @@ namespace Game.Lighting
 
             targetPosition = CalculateTargetPosition();
             positionVelocity = Vector3.zero;
+            targetCamera.transform.SetPositionAndRotation(targetPosition, initialRotation);
         }
 
         public void ResetToInitialPose()
@@ -131,7 +136,7 @@ namespace Game.Lighting
                     emitter.Direction.y,
                     0f);
                 float framingDistance =
-                    (emitter.EffectiveRange + boundaryPadding) * Mathf.Clamp01(framingCenterBias);
+                    emitter.EffectiveRange * Mathf.Clamp01(framingCenterBias);
                 framingOffset = sectorDirection * framingDistance;
                 framingOffset = right * Vector3.Dot(framingOffset, right) +
                     up * Vector3.Dot(framingOffset, up);
@@ -139,15 +144,8 @@ namespace Game.Lighting
 
             framingOffset = Vector3.ClampMagnitude(framingOffset, maximumFramingOffset);
             float screenOffsetX = Vector3.Dot(framingOffset, right);
-            float screenOffsetY = 0f;
-            screenOffsetY = Mathf.Clamp(
-                screenOffsetY,
-                -maximumCameraRise / Mathf.Max(MinimumDistance, Mathf.Abs(up.y)),
-                maximumCameraRise / Mathf.Max(MinimumDistance, Mathf.Abs(up.y)));
-
-            float backstep = CalculateRequiredBackstep(
-                screenOffsetX,
-                screenOffsetY);
+            float screenOffsetY = CalculateUpgradeRise();
+            float backstep = CalculateRequiredBackstep(screenOffsetX, screenOffsetY);
             Vector3 result = initialPosition + right * screenOffsetX +
                 up * screenOffsetY - forward * backstep;
             return IsFinite(result) ? result : initialPosition;
@@ -280,7 +278,8 @@ namespace Game.Lighting
             boundaryPoints.Clear();
             Vector2 origin2D = emitter.WorldPosition;
             Vector3 origin = new Vector3(origin2D.x, origin2D.y, gameplayPlaneZ);
-            AddLightBoundaryPoints(origin, emitter.EffectiveRange + boundaryPadding, emitter);
+            float maximumRange = emitter.EffectiveRange * Mathf.Clamp(visibleRangeFraction, 0.25f, 1f);
+            AddCircleBoundaryPoints(origin, maximumRange + boundaryPadding);
 
             if (innerCircle != null)
             {
@@ -337,6 +336,7 @@ namespace Game.Lighting
         {
             screenPadding = Mathf.Clamp(screenPadding, MinimumPadding, MaximumPadding);
             framingCenterBias = Mathf.Clamp01(framingCenterBias);
+            visibleRangeFraction = Mathf.Clamp(visibleRangeFraction, 0.25f, 1f);
             boundaryPadding = Mathf.Max(0f, boundaryPadding);
             smoothTime = Mathf.Max(0.01f, smoothTime);
             targetChangeThreshold = Mathf.Max(0f, targetChangeThreshold);
@@ -355,5 +355,17 @@ namespace Game.Lighting
         {
             return IsFinite(value.x) && IsFinite(value.y) && IsFinite(value.z);
         }
-    }
+
+
+private float CalculateUpgradeRise()
+        {
+            if (emitter == null || cameraRisePerRange <= 0f)
+            {
+                return 0f;
+            }
+
+            float rangeGrowth = Mathf.Max(0f, emitter.BaseRadius - initialBaseRadius);
+            return Mathf.Clamp(rangeGrowth * cameraRisePerRange, 0f, maximumCameraRise);
+        }
+}
 }

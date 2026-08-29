@@ -22,7 +22,7 @@ namespace Game.Lighting
         [SerializeField] private float candleWorldZ = -0.15f;
         [SerializeField, Min(0.01f)] private float baseRadius = 5f;
         [SerializeField, Range(1f, LightGeometry2D.FullCircleAngle)] private float sectorAngle = 90f;
-        [SerializeField, Range(1f, LightGeometry2D.FullCircleAngle)] private float minimumSectorAngle = 60f;
+        [SerializeField, Range(LightGeometry2D.DefaultMinimumSectorAngle, LightGeometry2D.FullCircleAngle)] private float minimumSectorAngle = LightGeometry2D.DefaultMinimumSectorAngle;
         [SerializeField, Min(0f)] private float baseIntensity = 1f;
         [SerializeField, Min(0f)] private float baseDamagePerSecond = 12f;
         [SerializeField, Min(1f)] private float maximumFocusMultiplier = 2.25f;
