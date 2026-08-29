@@ -156,7 +156,11 @@ namespace Game.Building
         {
             if (buildGrid == null)
             {
-                buildGrid = GetComponent<BuildGrid>() ?? FindObjectOfType<BuildGrid>();
+                buildGrid = GetComponent<BuildGrid>();
+                if (buildGrid == null)
+                {
+                    buildGrid = FindObjectOfType<BuildGrid>();
+                }
             }
 
             if (dayNightSystem == null)
@@ -166,15 +170,23 @@ namespace Game.Building
 
             if (coinInventory == null)
             {
-                coinInventory = GetComponent<CoinInventory>() ?? FindObjectOfType<CoinInventory>();
+                coinInventory = GetComponent<CoinInventory>();
+                if (coinInventory == null)
+                {
+                    coinInventory = FindObjectOfType<CoinInventory>();
+                }
             }
 
-            if (buildLight == null)
+            StageLightingBootstrap bootstrap = FindObjectOfType<StageLightingBootstrap>();
+            LightEmitter2D stageCandle = bootstrap == null ? null : bootstrap.CandleEmitter;
+            LightEmitter2D longestSector = IlluminationSystem.GetLongestSectorEmitter(true);
+            if (longestSector != null)
             {
-                StageLightingBootstrap bootstrap = FindObjectOfType<StageLightingBootstrap>();
-                buildLight = bootstrap == null
-                    ? IlluminationSystem.GetLongestSectorEmitter(true)
-                    : bootstrap.CandleEmitter ?? IlluminationSystem.GetLongestSectorEmitter(true);
+                buildLight = longestSector;
+            }
+            else if (stageCandle != null)
+            {
+                buildLight = stageCandle;
             }
         }
 

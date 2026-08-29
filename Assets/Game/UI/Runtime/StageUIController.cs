@@ -128,7 +128,8 @@ namespace Game.UI
 
         public void OnSunMoonClicked()
         {
-            if (dayNightSystem == null || dayNightSystem.CurrentPhase != DayNightPhase.Day)
+            if (isBuildMode || dayNightSystem == null ||
+                dayNightSystem.CurrentPhase != DayNightPhase.Day)
             {
                 return;
             }
@@ -161,7 +162,8 @@ namespace Game.UI
 
             isBuildMode = false;
             RestoreBuildModeState();
-            if (dayNightSystem != null)
+            if (dayNightSystem != null &&
+                dayNightSystem.CurrentPhase != DayNightPhase.Day)
             {
                 RefreshDayNight(dayNightSystem.CurrentPhase, dayNightSystem.CurrentDay);
             }
@@ -371,13 +373,13 @@ namespace Game.UI
 
             if (sunMoonButton != null)
             {
-                sunMoonButton.interactable = isDay;
+                sunMoonButton.interactable = isDay && !isBuildMode;
             }
 
             if (constructButton != null)
             {
                 bool wasConstructOpen = IsConstructOpen;
-                constructButton.interactable = isDay;
+                constructButton.interactable = isDay && !isBuildMode;
                 constructButton.gameObject.SetActive(isDay);
                 if (!isDay && wasConstructOpen)
                 {
@@ -388,16 +390,12 @@ namespace Game.UI
 
         private void EnsureDayNightLightingController()
         {
-            StageLightingBootstrap bootstrap = FindObjectOfType<StageLightingBootstrap>();
-            if (bootstrap == null)
-            {
-                bootstrap = gameObject.AddComponent<StageLightingBootstrap>();
-            }
-
-            DayNightLightingController controller = GetComponent<DayNightLightingController>();
+            DayNightLightingController controller = FindObjectOfType<DayNightLightingController>();
             if (controller == null)
             {
-                gameObject.AddComponent<DayNightLightingController>();
+                StageLightingBootstrap bootstrap = FindObjectOfType<StageLightingBootstrap>();
+                GameObject host = bootstrap == null ? gameObject : bootstrap.gameObject;
+                host.AddComponent<DayNightLightingController>();
             }
         }
 

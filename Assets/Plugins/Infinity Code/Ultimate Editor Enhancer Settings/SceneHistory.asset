@@ -12,23 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b1ad13bf0912354e82f29889c32b57b, type: 3}
   m_Name: SceneHistory
   m_EditorClassIdentifier: 
-<<<<<<< HEAD
-  _items:
-  - name: Stage 2
-    path: Assets/Scenes/Stage 2.unity
-=======
-<<<<<<< HEAD
-  _items:
->>>>>>> 330c11e3d0f7ddd6bacdaea6304257832c7da484
-  - name: Stage
-    path: Assets/Scenes/Stage.unity
-  - name: Stage 1
-    path: Assets/Scenes/Stage 1.unity
-<<<<<<< HEAD
-=======
-  - name: MainMenu
-    path: Assets/Scenes/MainMenu.unity
-=======
   _items: []
->>>>>>> 4bee4acba04f6a4c09f58203b5998f9792a6eaa3
->>>>>>> 330c11e3d0f7ddd6bacdaea6304257832c7da484

@@ -103,7 +103,8 @@ namespace Game.UI
         public void BeginLookoutTowerPlacement()
         {
             ResolveReferences();
-            if (buildSystem == null || lookoutTower == null || buildPreview == null)
+            if (buildSystem == null || lookoutTower == null || buildPreview == null ||
+                targetCamera == null)
             {
                 Debug.LogWarning(
                     $"[{nameof(BuildInputController)}] Cannot start building: " +

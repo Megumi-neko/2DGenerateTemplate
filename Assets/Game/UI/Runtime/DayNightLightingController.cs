@@ -32,6 +32,7 @@ namespace Game.UI
         private LightEmitter2D appliedCandle;
         private LightEmitter2D rangeEmitter;
         private float rangeRadius = -1f;
+        private Vector2 rangeCenter;
 
         private void Awake()
         {
@@ -90,8 +91,14 @@ namespace Game.UI
                 ? null
                 : lightingBootstrap.CandleEmitter;
             bool expectedEmitting = phase == DayNightPhase.Night;
+            StageLightingCameraFramer currentFramer = lightingBootstrap == null
+                ? null
+                : lightingBootstrap.CameraFramer;
+            bool framerNeedsReconciliation = currentFramer != null &&
+                currentFramer.IsManualMode == expectedEmitting;
             if (!stateApplied || phase != appliedPhase || currentCandle != appliedCandle ||
-                currentCandle != null && currentCandle.IsEmitting != expectedEmitting)
+                currentCandle != null && currentCandle.IsEmitting != expectedEmitting ||
+                framerNeedsReconciliation)
             {
                 ApplyState(phase);
             }
@@ -176,11 +183,14 @@ namespace Game.UI
             }
 
             float radius = emitter.MaximumEffectiveRange;
-            if (rangeEmitter != emitter || !Mathf.Approximately(rangeRadius, radius))
+            Vector2 center = emitter.WorldPosition;
+            if (rangeEmitter != emitter || !Mathf.Approximately(rangeRadius, radius) ||
+                (rangeCenter - center).sqrMagnitude > 0.0001f)
             {
                 rangeEmitter = emitter;
                 rangeRadius = radius;
-                RebuildRange(emitter.WorldPosition, radius);
+                rangeCenter = center;
+                RebuildRange(center, radius);
             }
 
             SetRangeVisible(radius > 0f);
@@ -274,6 +284,13 @@ namespace Game.UI
 
         private void CaptureOverlayOpacity()
         {
+            if (lightingBootstrap != null)
+            {
+                nightDarknessOpacity = lightingBootstrap.DarknessOpacity;
+                hasCapturedOpacity = true;
+                return;
+            }
+
             if (hasCapturedOpacity || overlay == null)
             {
                 return;

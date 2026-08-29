@@ -13,6 +13,8 @@ namespace Game.Lighting
         [SerializeField, Range(0f, 1f)] private float darknessOpacity = 0.96f;
 
         [Header("Central Candle")]
+        [Tooltip("Authored candle prefab. The bootstrap instantiates this instead of generating candle geometry.")]
+        [SerializeField] private GameObject candlePrefab;
         [SerializeField] private Vector2 candleWorldPosition;
         [SerializeField] private float candleWorldZ = -0.15f;
         [SerializeField, Min(0.01f)] private float baseRadius = 5f;
@@ -48,12 +50,18 @@ namespace Game.Lighting
         private readonly List<Material> runtimeMaterials = new List<Material>();
         private GameObject createdCandle;
         private GameObject candleVisualRoot;
+        private Transform candleScaleTarget;
+        private Vector3 candleBaseVisualScale;
+        private float candleBaseRadius;
+        private float candleBaseIntensity;
+        private bool hasCapturedCandleScale;
         private LightEmitter2D candleEmitter;
         private StageLightingCameraFramer cameraFramer;
         private int rangeUpgradeLevel;
         private int intensityUpgradeLevel;
 
         public Camera TargetCamera => targetCamera;
+        public float DarknessOpacity => darknessOpacity;
         public LightEmitter2D CandleEmitter => candleEmitter;
         public InnerCircleLight2D InnerCircle => candleEmitter == null
             ? null
@@ -91,6 +99,7 @@ namespace Game.Lighting
 
             candleEmitter.BaseRadius += rangeUpgradeAmount;
             rangeUpgradeLevel++;
+            RefreshCandleScale();
             cameraFramer?.ReframeImmediately();
             return true;
         }
@@ -105,6 +114,7 @@ namespace Game.Lighting
             candleEmitter.BaseIntensity += intensityUpgradeAmount;
             candleEmitter.BaseDamagePerSecond += damageUpgradeAmount;
             intensityUpgradeLevel++;
+            RefreshCandleScale();
             cameraFramer?.ReframeImmediately();
             return true;
         }
@@ -186,12 +196,26 @@ namespace Game.Lighting
 
         private void EnsureCandle()
         {
-            GameObject existingCandle = FindChildByName("Stage 1 Central Candle");
+            GameObject existingCandle = FindChildByName("Stage Central Candle");
             if (existingCandle == null)
             {
-                createdCandle = new GameObject("Stage 1 Central Candle");
-                createdCandle.transform.SetParent(transform, false);
+                existingCandle = FindChildByName("Stage 1 Central Candle");
+            }
+
+            if (existingCandle == null && candlePrefab != null)
+            {
+                createdCandle = Instantiate(candlePrefab, transform, false);
+                createdCandle.name = "Stage Central Candle";
                 existingCandle = createdCandle;
+            }
+
+            if (existingCandle == null)
+            {
+                Debug.LogError(
+                    $"[{nameof(StageLightingBootstrap)}] Assign an authored Candle Prefab. " +
+                    "Runtime candle geometry is no longer generated.",
+                    this);
+                return;
             }
 
             existingCandle.transform.position = new Vector3(
@@ -231,7 +255,38 @@ namespace Game.Lighting
             }
 
             focusController.Initialize(targetCamera, candleEmitter);
-            CreateCandleVisual(existingCandle.transform);
+            CaptureCandleScale(existingCandle.transform);
+            RefreshCandleScale();
+        }
+
+        private void CaptureCandleScale(Transform candleTransform)
+        {
+            if (hasCapturedCandleScale)
+            {
+                return;
+            }
+
+            Transform visual = candleTransform.Find("Visual");
+            candleScaleTarget = visual == null ? candleTransform : visual;
+            candleBaseVisualScale = candleScaleTarget.localScale;
+            candleBaseRadius = Mathf.Max(0.01f, candleEmitter.BaseRadius);
+            candleBaseIntensity = Mathf.Max(0.01f, candleEmitter.BaseIntensity);
+            hasCapturedCandleScale = true;
+        }
+
+        private void RefreshCandleScale()
+        {
+            if (!hasCapturedCandleScale || candleScaleTarget == null || candleEmitter == null)
+            {
+                return;
+            }
+
+            float heightMultiplier = Mathf.Max(0.01f, candleEmitter.BaseRadius / candleBaseRadius);
+            float widthMultiplier = Mathf.Max(0.01f, candleEmitter.BaseIntensity / candleBaseIntensity);
+            candleScaleTarget.localScale = new Vector3(
+                candleBaseVisualScale.x * widthMultiplier,
+                candleBaseVisualScale.y * heightMultiplier,
+                candleBaseVisualScale.z);
         }
 
         public void RefreshCandleVisual()

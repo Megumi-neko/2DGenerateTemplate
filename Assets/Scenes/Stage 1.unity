@@ -57603,6 +57603,7 @@ MonoBehaviour:
   targetCamera: {fileID: 0}
   gameplayPlaneZ: 0
   darknessOpacity: 1
+  candlePrefab: {fileID: 7400000000000001, guid: f8c7e6d5b4a392817061504f3e2d1c0b, type: 3}
   candleWorldPosition: {x: 0, y: 0}
   candleWorldZ: -0.15
   baseRadius: 5

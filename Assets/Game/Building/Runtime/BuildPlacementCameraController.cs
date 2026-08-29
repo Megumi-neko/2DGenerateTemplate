@@ -256,6 +256,10 @@ namespace Game.Building
 
             if (!IsCameraViewInsideBoundary(currentPosition))
             {
+                if (IsCameraCenterInsideBoundary(desiredPosition))
+                {
+                    targetCamera.transform.position = desiredPosition;
+                }
                 return;
             }
 
@@ -279,6 +283,29 @@ namespace Game.Building
                 currentPosition,
                 desiredPosition,
                 low);
+        }
+
+        private bool IsCameraCenterInsideBoundary(Vector3 position)
+        {
+            if (buildLight == null || targetCamera == null)
+            {
+                return false;
+            }
+
+            Vector3 originalPosition = targetCamera.transform.position;
+            targetCamera.transform.position = position;
+            bool hasCenter = TryGetGameplayPlanePoint(new Vector2(0.5f, 0.5f), out Vector2 center);
+            targetCamera.transform.position = originalPosition;
+            if (!hasCenter)
+            {
+                return false;
+            }
+
+            float radius = Mathf.Max(
+                MinimumRadius,
+                buildLight.MaximumEffectiveRange - boundaryPadding);
+            return (center - buildLight.WorldPosition).sqrMagnitude <=
+                radius * radius + BoundaryEpsilon;
         }
 
         private bool TryGetGameplayPlanePoint(Vector2 viewportPosition, out Vector2 point)
