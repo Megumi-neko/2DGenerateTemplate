@@ -547,13 +547,14 @@ EventBus.Instance.Subscribe<DayNightCompleted>(OnCompleted);
 - [BuildGrid.cs](Assets/Game/Building/Runtime/BuildGrid.cs)：负责世界坐标/Grid 坐标转换和多格占用登记。
 - [BuildPlacementValidator.cs](Assets/Game/Building/Runtime/BuildPlacementValidator.cs)：集中判断昼夜阶段、边界、占用和资源条件。
 - [BuildSystem.cs](Assets/Game/Building/Runtime/BuildSystem.cs)：建造的唯一正式入口，负责扣资源、实例化和发布事件。
-- [BuildPreview.cs](Assets/Game/Building/Runtime/BuildPreview.cs)：显示绿色/红色的瞭望塔预览，不登记正式占用。
+- [BuildPreview.cs](Assets/Game/Building/Runtime/BuildPreview.cs)：显示绿色/红色的瞭望塔模型预览，不登记正式占用。
+- [BuildFootprintPreview.cs](Assets/Game/Building/Runtime/BuildFootprintPreview.cs)：使用独立的运行时 Tilemap 显示建筑实际占用格；合法格为绿色、冲突/越界格为红色、资源不足为黄色、阶段错误为灰色。
 - [CoinInventory.cs](Assets/Game/Building/Runtime/CoinInventory.cs)：管理本阶段使用的影结晶数量。
 - [BuildInputController.cs](Assets/Game/UI/Runtime/BuildInputController.cs)：处理选择瞭望塔、鼠标预览、左键确认和右键/Escape 取消。
 
 ### 7.2 Stage 使用流程
 
-Stage 场景中的 `Building System` 对象挂载了 `BuildGrid`、`CoinInventory`、`BuildSystem`、`BuildPreview` 和 `BuildInputController`。
+Stage 场景中的 `Building System` 对象挂载了 `BuildGrid`、`CoinInventory`、`BuildSystem`、`BuildPreview`、`BuildFootprintPreview` 和 `BuildInputController`。`BuildFootprintPreview` 会在运行时创建独立的 `Build Preview Tilemap`，复制正式地图 Tilemap 的局部变换和排序设置，不会修改正式地图数据。
 
 运行时操作流程：
 

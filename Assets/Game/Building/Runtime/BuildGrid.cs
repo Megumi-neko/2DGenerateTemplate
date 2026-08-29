@@ -15,7 +15,33 @@ namespace Game.Building
         private readonly Dictionary<Vector3Int, BuildInstance> occupiedCells =
             new Dictionary<Vector3Int, BuildInstance>();
 
-        public Grid Grid => grid;
+        public Grid Grid
+        {
+            get
+            {
+                ResolveReferences();
+                return grid;
+            }
+        }
+
+        public Tilemap BuildableTilemap
+        {
+            get
+            {
+                ResolveReferences();
+                return buildableTilemap;
+            }
+        }
+
+        public BoundsInt BuildBounds
+        {
+            get
+            {
+                ResolveReferences();
+                return GetBuildBounds();
+            }
+        }
+
         public IReadOnlyDictionary<Vector3Int, BuildInstance> OccupiedCells => occupiedCells;
 
         private void Awake()
@@ -26,12 +52,33 @@ namespace Game.Building
         public Vector3Int WorldToCell(Vector3 worldPosition)
         {
             ResolveReferences();
-            return grid == null ? Vector3Int.RoundToInt(worldPosition) : grid.WorldToCell(worldPosition);
+            if (buildableTilemap != null)
+            {
+                return buildableTilemap.WorldToCell(worldPosition);
+            }
+
+            return grid == null
+                ? Vector3Int.RoundToInt(worldPosition)
+                : grid.WorldToCell(worldPosition);
         }
 
         public Vector3 CellToWorld(Vector3Int cellPosition, Vector2Int footprint)
         {
             ResolveReferences();
+            if (buildableTilemap != null)
+            {
+                Vector3 origin = buildableTilemap.GetCellCenterWorld(cellPosition);
+                Vector3 xStep = buildableTilemap.CellToWorld(
+                    cellPosition + Vector3Int.right) -
+                    buildableTilemap.CellToWorld(cellPosition);
+                Vector3 yStep = buildableTilemap.CellToWorld(
+                    cellPosition + Vector3Int.up) -
+                    buildableTilemap.CellToWorld(cellPosition);
+                return origin +
+                    xStep * ((footprint.x - 1) * 0.5f) +
+                    yStep * ((footprint.y - 1) * 0.5f);
+            }
+
             if (grid == null)
             {
                 return cellPosition + new Vector3(
@@ -40,9 +87,9 @@ namespace Game.Building
                     0f);
             }
 
-            Vector3 origin = grid.GetCellCenterWorld(cellPosition);
+            Vector3 gridOrigin = grid.GetCellCenterWorld(cellPosition);
             Vector3 cellSize = grid.cellSize;
-            return origin + new Vector3(
+            return gridOrigin + new Vector3(
                 (footprint.x - 1) * cellSize.x * 0.5f,
                 (footprint.y - 1) * cellSize.y * 0.5f,
                 0f);
@@ -76,9 +123,24 @@ namespace Game.Building
             return occupiedCells.ContainsKey(cellPosition);
         }
 
-        public bool CanOccupy(Vector3Int cellPosition, Vector2Int footprint)
+        public bool IsBuildableCell(Vector3Int cellPosition)
         {
-            if (footprint.x <= 0 || footprint.y <= 0 || !IsInsideBounds(cellPosition, footprint))
+            BoundsInt bounds = BuildBounds;
+            if (bounds.size.x > 0 && bounds.size.y > 0 &&
+                !bounds.Contains(cellPosition))
+            {
+                return false;
+            }
+
+            return buildableTilemap == null ||
+                buildableTilemap.HasTile(cellPosition);
+        }
+
+        public bool AreCellsBuildable(
+            Vector3Int cellPosition,
+            Vector2Int footprint)
+        {
+            if (footprint.x <= 0 || footprint.y <= 0)
             {
                 return false;
             }
@@ -87,7 +149,36 @@ namespace Game.Building
             {
                 for (int x = 0; x < footprint.x; x++)
                 {
-                    if (occupiedCells.ContainsKey(cellPosition + new Vector3Int(x, y, 0)))
+                    if (!IsBuildableCell(
+                            cellPosition + new Vector3Int(x, y, 0)))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public bool CanOccupyCell(Vector3Int cellPosition)
+        {
+            return IsBuildableCell(cellPosition) &&
+                !IsOccupied(cellPosition);
+        }
+
+        public bool CanOccupy(Vector3Int cellPosition, Vector2Int footprint)
+        {
+            if (!AreCellsBuildable(cellPosition, footprint))
+            {
+                return false;
+            }
+
+            for (int y = 0; y < footprint.y; y++)
+            {
+                for (int x = 0; x < footprint.x; x++)
+                {
+                    if (!CanOccupyCell(
+                            cellPosition + new Vector3Int(x, y, 0)))
                     {
                         return false;
                     }

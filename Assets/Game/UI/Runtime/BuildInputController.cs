@@ -12,6 +12,8 @@ namespace Game.UI
     {
         [SerializeField] private BuildSystem buildSystem;
         [SerializeField] private BuildPreview buildPreview;
+            [SerializeField] private BuildAreaGridPreview areaGridPreview;
+        [SerializeField] private BuildFootprintPreview footprintPreview;
         [SerializeField] private BuildDefinition lookoutTower;
         [SerializeField] private Camera targetCamera;
         [SerializeField] private StageUIController stageUIController;
@@ -59,6 +61,10 @@ namespace Game.UI
             if (!TryGetPointerWorldPosition(out Vector3 worldPosition))
             {
                 buildPreview.Hide();
+                if (footprintPreview != null)
+                {
+                    footprintPreview.Clear();
+                }
                 return;
             }
 
@@ -70,6 +76,13 @@ namespace Game.UI
                 lookoutTower,
                 buildSystem.CellToWorld(currentCellPosition, lookoutTower),
                 result.IsValid);
+            if (footprintPreview != null)
+            {
+                footprintPreview.Show(
+                    currentCellPosition,
+                    lookoutTower.Footprint,
+                    result);
+            }
 
             if (!skipPointerClick &&
                 Input.GetMouseButtonDown(0) &&
@@ -101,6 +114,11 @@ namespace Game.UI
 
             isPlacing = true;
             skipPointerClick = true;
+            if (areaGridPreview != null)
+            {
+                areaGridPreview.Show();
+            }
+
             if (stageUIController != null)
             {
                 stageUIController.CloseConstruct();
@@ -114,6 +132,16 @@ namespace Game.UI
             if (buildPreview != null)
             {
                 buildPreview.Hide();
+            }
+
+            if (footprintPreview != null)
+            {
+                footprintPreview.Clear();
+            }
+
+            if (areaGridPreview != null)
+            {
+                areaGridPreview.Hide();
             }
         }
 
@@ -135,6 +163,16 @@ namespace Game.UI
             if (buildPreview == null)
             {
                 buildPreview = FindObjectOfType<BuildPreview>();
+            }
+
+            if (footprintPreview == null)
+            {
+                footprintPreview = FindObjectOfType<BuildFootprintPreview>();
+            }
+
+            if (areaGridPreview == null)
+            {
+                areaGridPreview = FindObjectOfType<BuildAreaGridPreview>();
             }
 
             if (lookoutTower == null && buildSystem != null)

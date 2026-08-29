@@ -10,6 +10,7 @@ namespace Game.Building
         MissingPrefab,
         WrongPhase,
         OutsideBuildBounds,
+        UnbuildableCell,
         Occupied,
         InsufficientCoins,
         InvalidFootprint,
@@ -74,6 +75,11 @@ namespace Game.Building
             if (!buildGrid.IsInsideBounds(cellPosition, footprint))
             {
                 return Invalid(BuildPlacementFailureReason.OutsideBuildBounds);
+            }
+
+            if (!buildGrid.AreCellsBuildable(cellPosition, footprint))
+            {
+                return Invalid(BuildPlacementFailureReason.UnbuildableCell);
             }
 
             if (!buildGrid.CanOccupy(cellPosition, footprint))

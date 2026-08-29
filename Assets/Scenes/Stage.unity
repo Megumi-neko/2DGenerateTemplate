@@ -61091,6 +61091,8 @@ GameObject:
   - component: {fileID: 3100000004}
   - component: {fileID: 3100000005}
   - component: {fileID: 3100000006}
+  - component: {fileID: 3100000009}
+  - component: {fileID: 3100000008}
   - component: {fileID: 3100000007}
   m_Layer: 0
   m_Name: Building System
@@ -61169,6 +61171,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 889900aabbccddeeff11223344556677, type: 3}
   m_Name:
   m_EditorClassIdentifier:
+--- !u!114 &3100000009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee00112233445566778899aabbccddee, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  buildGrid: {fileID: 3100000003}
+  gridTilemap: {fileID: 0}
+  outlineTile: {fileID: 0}
+  hideOccupiedCells: 1
+--- !u!114 &3100000008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddee00112233445566778899aabbccdd, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  buildGrid: {fileID: 3100000003}
+  previewTilemap: {fileID: 0}
+  previewTile: {fileID: 0}
 --- !u!114 &3100000007
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61183,6 +61216,7 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   buildSystem: {fileID: 3100000005}
   buildPreview: {fileID: 3100000006}
+  footprintPreview: {fileID: 3100000008}
   lookoutTower: {fileID: 11400000, guid: bbccddeeff00112233445566778899aa, type: 2}
   targetCamera: {fileID: 0}
   stageUIController: {fileID: 452546530}
