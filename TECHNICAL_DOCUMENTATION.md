@@ -13,6 +13,7 @@
 - GameObject 对象池：复用频繁创建和销毁的游戏对象。
 - 2D 光照系统：支持圆形光源、扇形光源、光照采样和黑暗覆盖效果。
 - 昼夜系统：管理五天的白天/黑夜流程，并为后续光照适配提供事件接口。
+- 瞭望塔建造系统：第一阶段支持 2×2 网格瞭望塔预览、合法性检查、资源扣除和放置。
 - Unity Test Framework EditMode 测试。
 - DOTween、Tilemap、UGUI、TextMeshPro、Timeline 和 Unity MCP 等项目依赖。
 
@@ -40,6 +41,14 @@ Assets/
 │   │   │   ├── Game.DayNight.Tests.asmdef
 │   │   │   └── DayNightSystemTests.cs
 │   │   └── Game.DayNight.asmdef
+│   ├── UI/Runtime/
+│   │   ├── StageUIController.cs       # Stage 旧版 UGUI 控制器
+│   │   └── BuildInputController.cs    # 瞭望塔建造输入
+│   ├── Building/
+│   │   ├── Runtime/                    # 瞭望塔第一阶段建造系统
+│   │   ├── Data/                       # 建筑 ScriptableObject 数据
+│   │   ├── Prefabs/                    # 项目建筑 Prefab
+│   │   └── Tests/EditMode/             # 建造系统测试
 │   └── Lighting/
 │       ├── Runtime/                   # 光照运行时模块
 │       ├── Demo/                      # 光照演示场景脚本
@@ -69,8 +78,11 @@ Game.DayNight
     └── DayNightSystem、DayNightEvents、DayNightPhase
     └── 依赖 Game.BaseSystem
 
-Game.DayNight.Tests
-    └── 依赖 Game.DayNight 和 Game.BaseSystem
+Game.Building.Tests
+    └── 依赖 Game.Building、Game.DayNight 和 Game.BaseSystem
+
+Game.UI（当前属于 Assembly-CSharp）
+    └── StageUIController、BuildInputController
 
 Game.Lighting
     └── 光照运行时代码
@@ -516,9 +528,89 @@ EventBus.Instance.Subscribe<DayNightCompleted>(OnCompleted);
 
 后续实现视觉效果时，建议新增独立组件订阅 `DayNightStateChanged`，保持 `DayNightSystem` 只管理状态和时间。
 
-## 7. 测试体系
+## 7. 第一阶段建造系统：瞭望塔
 
-### 7.1 测试位置
+建造系统位于 [Assets/Game/Building/](Assets/Game/Building/)，当前只实现第一阶段的瞭望塔建造闭环。它复用 Stage 已有的 `Grid`、`Tilemap`、`ConstructPanel` 和 `StageUIController`，不依赖 Text Mesh Pro。
+
+当前唯一建筑类型是瞭望塔，使用 [LookoutTower.asset](Assets/Game/Building/Data/LookoutTower.asset) 配置：
+
+- 建筑 ID：`lookout_tower`。
+- 占用范围：2×2 个 Grid 格子。
+- 建造消耗：10 个影结晶。
+- 只允许白天建造。
+- 第一阶段不包含旋转、拆除、维修、升级、攻击和光照联动。
+
+### 7.1 模块职责
+
+- [BuildDefinition.cs](Assets/Game/Building/Runtime/BuildDefinition.cs)：以 ScriptableObject 保存建筑 ID、Prefab、占用尺寸和资源消耗。
+- [BuildInstance.cs](Assets/Game/Building/Runtime/BuildInstance.cs)：表示场景中已经创建的建筑实例。
+- [BuildGrid.cs](Assets/Game/Building/Runtime/BuildGrid.cs)：负责世界坐标/Grid 坐标转换和多格占用登记。
+- [BuildPlacementValidator.cs](Assets/Game/Building/Runtime/BuildPlacementValidator.cs)：集中判断昼夜阶段、边界、占用和资源条件。
+- [BuildSystem.cs](Assets/Game/Building/Runtime/BuildSystem.cs)：建造的唯一正式入口，负责扣资源、实例化和发布事件。
+- [BuildPreview.cs](Assets/Game/Building/Runtime/BuildPreview.cs)：显示绿色/红色的瞭望塔模型预览，不登记正式占用。
+- [BuildFootprintPreview.cs](Assets/Game/Building/Runtime/BuildFootprintPreview.cs)：使用独立的运行时 Tilemap 显示建筑实际占用格；合法格为绿色、冲突/越界格为红色、资源不足为黄色、阶段错误为灰色。
+- [CoinInventory.cs](Assets/Game/Building/Runtime/CoinInventory.cs)：管理本阶段使用的影结晶数量。
+- [BuildInputController.cs](Assets/Game/UI/Runtime/BuildInputController.cs)：处理选择瞭望塔、鼠标预览、左键确认和右键/Escape 取消。
+
+### 7.2 Stage 使用流程
+
+Stage 场景中的 `Building System` 对象挂载了 `BuildGrid`、`CoinInventory`、`BuildSystem`、`BuildPreview`、`BuildFootprintPreview` 和 `BuildInputController`。`BuildFootprintPreview` 会在运行时创建独立的 `Build Preview Tilemap`，复制正式地图 Tilemap 的局部变换和排序设置，不会修改正式地图数据。
+
+运行时操作流程：
+
+1. 确保当前是白天，并且影结晶不少于 10。
+2. 点击现有的建造入口打开 `ConstructPanel`。
+3. `BuildInputController` 会在面板中创建“瞭望塔”按钮。
+4. 点击瞭望塔按钮进入建造模式。
+5. 鼠标移动时，预览会吸附到 Grid，并检查 2×2 区域。
+6. 绿色表示可以建造，红色表示不能建造。
+7. 在绿色位置点击左键，调用 `BuildSystem.TryPlace()`。
+8. 建造成功后扣除 10 个影结晶，生成 [LookoutTower.prefab](Assets/Game/Building/Prefabs/LookoutTower.prefab)，并登记四个格子。
+9. 右键或 Escape 取消预览，不会生成建筑，也不会扣除资源。
+
+`StageUIController` 仍然负责现有面板开关、阶段按钮和影结晶文本显示；建造系统不直接修改 UI 文本。
+
+### 7.3 建造事件
+
+[BuildEvents.cs](Assets/Game/Building/Runtime/BuildEvents.cs) 当前提供：
+
+- `BuildPlaced`：建造成功后发布。
+- `BuildPlacementFailed`：建造检查失败时发布，便于调试和后续提示。
+
+订阅示例：
+
+```csharp
+private void OnEnable()
+{
+    EventBus.Instance.Subscribe<BuildPlaced>(OnBuildPlaced);
+}
+
+private void OnDisable()
+{
+    EventBus.Instance.UnSubscribe<BuildPlaced>(OnBuildPlaced);
+}
+
+private void OnBuildPlaced(BuildPlaced placed)
+{
+    Debug.Log($"建造完成：{placed.BuildingId}");
+}
+```
+
+### 7.4 当前建造限制
+
+- 使用左下角 Grid 坐标作为建筑逻辑坐标。
+- 瞭望塔固定 2×2 占用。
+- 不支持旋转。
+- 不支持拆除，所以当前没有资源返还。
+- 黑夜和 `Completed` 阶段禁止建造。
+- 瞭望塔 Prefab 的根对象保持 Grid 位置和 2D 碰撞不旋转，`Visual` 子对象通过 `EnvironmentBillboard` 在 `LateUpdate()` 中朝向主相机，以保持和场景环境一致的 2.5D 立体表现。
+- 建筑 Prefab 暂不包含攻击、索敌、生命值或光照等玩法逻辑。
+- 现有 tower 图片资源属于第三方资源，项目只通过自己的 Prefab 引用，不应修改源文件。
+
+
+## 8. 测试体系
+
+### 8.1 测试位置
 
 - 昼夜测试：[DayNightSystemTests.cs](Assets/Game/DayNight/Tests/EditMode/DayNightSystemTests.cs)
 - 光照测试：[Assets/Game/Lighting/Tests/EditMode/](Assets/Game/Lighting/Tests/EditMode/)
@@ -532,7 +624,7 @@ Window > General > Test Runner
 
 然后选择 EditMode 测试。
 
-### 7.2 昼夜测试辅助 API
+### 8.2 昼夜测试辅助 API
 
 为了避免测试真实等待几分钟，昼夜系统提供了仅供测试程序集使用的内部方法：
 
@@ -557,7 +649,7 @@ Assert.That(system.CurrentDay, Is.EqualTo(2));
 Assert.That(system.CurrentPhase, Is.EqualTo(DayNightPhase.Day));
 ```
 
-### 7.3 新功能测试要求
+### 8.3 新功能测试要求
 
 新增昼夜功能时，至少应覆盖：
 
@@ -580,7 +672,7 @@ Assert.That(system.CurrentPhase, Is.EqualTo(DayNightPhase.Day));
 - 光源销毁后的注册表清理。
 - 几何边界和非法数值处理。
 
-## 8. 场景和运行流程
+## 9. 场景和运行流程
 
 ### Stage 场景
 
@@ -591,15 +683,15 @@ Day Night System
 └── DayNightSystem
 ```
 
-场景启动后状态为第 1 天白天，但由于 UI 已暂时取消，当前没有默认按钮或文本显示。后续可由玩家控制器、交互系统或其他玩法脚本调用 `EndDay()`。
+场景启动后状态为第 1 天白天。Stage 中已有旧版 UGUI 控制面板和建造入口，昼夜系统本身没有单独的倒计时 UI；瞭望塔按钮由 `BuildInputController` 在 `ConstructPanel` 中创建。
 
 ### LightingDemo 场景
 
 `LightingDemo.unity` 只用于验证光照系统，包含独立的演示初始化和 OnGUI 控制面板。不要把它当作主游戏场景，也不要为了昼夜需求直接修改它。
 
-## 9. 后续开发建议
+## 10. 后续开发建议
 
-### 9.1 昼夜与光照对接
+### 10.1 昼夜与光照对接
 
 建议新增一个独立的组件，例如 `DayNightLightingBridge`：
 
@@ -623,7 +715,7 @@ private void OnStateChanged(DayNightStateChanged state)
 
 该组件可以控制 `DarknessOverlayEffect`、环境颜色、灯光强度和音频，但不应把这些依赖反向写入 `DayNightSystem`。
 
-### 9.2 昼夜倒计时显示
+### 10.2 昼夜倒计时显示
 
 后续增加 UI 时，UI 只负责显示和调用入口，不复制天数规则：
 
@@ -641,7 +733,7 @@ system.EndDay();
 
 UI 应在 `OnDisable()` 中取消事件订阅，并且不直接修改 `currentDay` 或 `nightRemainingSeconds`。
 
-### 9.3 新增模块的原则
+### 10.3 新增模块的原则
 
 - 优先通过事件总线通信，避免跨系统直接持有过多引用。
 - 每个运行时模块使用自己的 Assembly Definition。
@@ -652,7 +744,7 @@ UI 应在 `OnDisable()` 中取消事件订阅，并且不直接修改 `currentDa
 - 场景引用变更后检查对应 `.meta` 文件和 GUID。
 - 修改光照系统时保持 `LightingDemo.unity` 的独立可运行性。
 
-## 10. 常见问题排查
+## 11. 常见问题排查
 
 ### 脚本无法添加到 GameObject
 
@@ -697,7 +789,7 @@ Game.BaseSystem
 5. 光源是否已经注册到 `IlluminationSystem`。
 6. 如果只是屏幕上没有黑暗/光照效果，另行检查 Camera 上的 `DarknessOverlayEffect` 和 Shader。
 
-## 11. 提交前检查清单
+## 12. 提交前检查清单
 
 - [ ] Unity Console 没有新增编译错误。
 - [ ] 运行相关 EditMode 测试。

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11223344556677889900aabbccddeeff, type: 3}
+  m_Name: LookoutTower
+  m_EditorClassIdentifier:
+  buildingId: lookout_tower
+  displayName: 瞭望塔
+  prefab: {fileID: 8800000000000001, guid: aabbccddeeff00112233445566778899, type: 3}
+  footprint: {x: 2, y: 2}
+  coinCost: 10
+  canBuildDuringDay: 1
