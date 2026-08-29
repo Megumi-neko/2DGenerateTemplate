@@ -20,6 +20,7 @@ namespace Game.Combat.Tests
         public void DefaultStats_IncreaseHealthAndAttackAcrossLevels()
         {
             EnemyLevelStats previous = EnemyStats.GetDefault(1);
+            Assert.That(previous.MaxHealth, Is.EqualTo(60f));
             for (int level = 2; level <= EnemyStats.MaximumThreatLevel; level++)
             {
                 EnemyLevelStats current = EnemyStats.GetDefault(level);
@@ -30,22 +31,48 @@ namespace Game.Combat.Tests
         }
 
         [Test]
-        public void ThreatScale_IncreasesWithThreatLevel()
+        public void SpawnBudget_IncreasesWithThreatLevel()
         {
-            float previous = EnemyController.GetScaleMultiplier(1, false, 0.1f);
+            int previous = EnemySpawner.GetSpawnLimitForThreat(1, 60);
             for (int level = 2; level <= EnemyStats.MaximumThreatLevel; level++)
             {
-                float current = EnemyController.GetScaleMultiplier(level, false, 0.1f);
+                int current = EnemySpawner.GetSpawnLimitForThreat(level, 60);
                 Assert.That(current, Is.GreaterThan(previous));
                 previous = current;
             }
+
+            Assert.That(EnemySpawner.GetMaxAliveForThreat(6, 20), Is.GreaterThan(20));
+        }
+
+        [Test]
+        public void SpawnDistanceRange_ExpandsBeyondOuterLightRadius()
+        {
+            Vector2 range = EnemySpawner.GetSpawnDistanceRange(6f, 12f, 20f, 0.5f);
+
+            Assert.That(range.x, Is.EqualTo(20.5f).Within(0.0001f));
+            Assert.That(range.y, Is.EqualTo(26.5f).Within(0.0001f));
+        }
+
+        [Test]
+        public void ThreatScale_IncreasesNonLinearlyWithThreatLevel()
+        {
+            float levelOne = EnemyController.GetScaleMultiplier(1, false);
+            float levelTwo = EnemyController.GetScaleMultiplier(2, false);
+            float levelThree = EnemyController.GetScaleMultiplier(3, false);
+            float levelSix = EnemyController.GetScaleMultiplier(6, false);
+
+            Assert.That(levelOne, Is.GreaterThan(1f));
+            Assert.That(levelTwo, Is.GreaterThan(levelOne));
+            Assert.That(levelThree, Is.GreaterThan(levelTwo));
+            Assert.That(levelSix, Is.GreaterThan(levelThree));
+            Assert.That(levelThree - levelTwo, Is.GreaterThan(levelTwo - levelOne));
         }
 
         [Test]
         public void BossScale_IsLargerThanSameThreatEnemy()
         {
-            float normal = EnemyController.GetScaleMultiplier(6, false, 0.1f, 1.5f);
-            float boss = EnemyController.GetScaleMultiplier(6, true, 0.1f, 1.5f);
+            float normal = EnemyController.GetScaleMultiplier(6, false, 0.1f, 1.5f, 1f, 1f);
+            float boss = EnemyController.GetScaleMultiplier(6, true, 0.1f, 1.5f, 1f, 1f);
 
             Assert.That(boss, Is.GreaterThan(normal));
             Assert.That(normal, Is.EqualTo(1.5f).Within(0.0001f));
@@ -57,7 +84,7 @@ namespace Game.Combat.Tests
         public void ThreatScale_ClampsThreatLevel(int threatLevel, float expected)
         {
             Assert.That(
-                EnemyController.GetScaleMultiplier(threatLevel, false, 0.1f),
+                EnemyController.GetScaleMultiplier(threatLevel, false, 0.1f, 1.5f, 1f, 1f),
                 Is.EqualTo(expected).Within(0.0001f));
         }
 

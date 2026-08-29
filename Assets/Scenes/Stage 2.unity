@@ -62422,9 +62422,17 @@ MonoBehaviour:
   firstSpawnDelay: 1
   maxAlive: 20
   maxSpawnedPerNight: 60
+  spawnCountThreatMultiplier: 1.8
+  spawnCountThreatExponent: 1.35
+  aliveThreatMultiplier: 1.5
   maximumThreatChance: 0.55
   fallbackSpawnRadius: 9
   bossSpawnRadius: 3
+  minimumSpawnDistance: 6
+  maximumSpawnDistance: 12
+  darkSpawnAttempts: 24
+  darknessPadding: 0.35
+  spawnVerticalJitter: 1
   prewarmCount: 8
   poolCapacity: 40
   bossHealthMultiplier: 4

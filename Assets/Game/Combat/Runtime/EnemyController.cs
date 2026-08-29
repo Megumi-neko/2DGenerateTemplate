@@ -24,8 +24,10 @@ namespace Game.Combat
 
         [SerializeField] private SpriteRenderer visual;
         [SerializeField] private Color bossColor = new Color(1f, 0.25f, 0.2f, 1f);
-        [SerializeField, Min(1f)] private float bossScaleMultiplier = 1.5f;
-        [SerializeField, Min(0f)] private float threatScaleStep = 0.1f;
+        [SerializeField, Min(1f)] private float baseScaleMultiplier = 1.25f;
+        [SerializeField, Min(1f)] private float bossScaleMultiplier = 1.75f;
+        [SerializeField, Min(0f)] private float threatScaleStep = 0.18f;
+        [SerializeField, Min(0.01f)] private float threatScaleExponent = 1.6f;
 
 
         private Health health;
@@ -192,7 +194,9 @@ namespace Game.Combat
                 ThreatLevel,
                 boss,
                 threatScaleStep,
-                bossScaleMultiplier);
+                bossScaleMultiplier,
+                baseScaleMultiplier,
+                threatScaleExponent);
             transform.localScale = baseScale;
             if (visualRoot != null)
             {
@@ -217,15 +221,19 @@ namespace Game.Combat
         public static float GetScaleMultiplier(
             int threatLevel,
             bool boss,
-            float threatScaleStep = 0.1f,
-            float bossScaleMultiplier = 1.5f)
+            float threatScaleStep = 0.18f,
+            float bossScaleMultiplier = 1.75f,
+            float baseScaleMultiplier = 1.25f,
+            float threatScaleExponent = 1.6f)
         {
             int sanitizedThreat = Mathf.Clamp(
                 threatLevel,
                 EnemyStats.MinimumThreatLevel,
                 EnemyStats.MaximumThreatLevel);
-            float threatMultiplier = 1f +
-                (sanitizedThreat - EnemyStats.MinimumThreatLevel) * Mathf.Max(0f, threatScaleStep);
+            float levelOffset = sanitizedThreat - EnemyStats.MinimumThreatLevel;
+            float threatMultiplier = Mathf.Max(1f, baseScaleMultiplier) *
+                (1f + Mathf.Max(0f, threatScaleStep) *
+                    Mathf.Pow(levelOffset, Mathf.Max(0.01f, threatScaleExponent)));
             return threatMultiplier * (boss ? Mathf.Max(1f, bossScaleMultiplier) : 1f);
         }
 
@@ -301,7 +309,9 @@ namespace Game.Combat
             attackInterval = Mathf.Max(0.05f, attackInterval);
             illuminationSampleInterval = Mathf.Max(0.02f, illuminationSampleInterval);
             bossScaleMultiplier = Mathf.Max(1f, bossScaleMultiplier);
+            baseScaleMultiplier = Mathf.Max(1f, baseScaleMultiplier);
             threatScaleStep = Mathf.Max(0f, threatScaleStep);
+            threatScaleExponent = Mathf.Max(0.01f, threatScaleExponent);
 
         }
     }

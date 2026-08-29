@@ -5,7 +5,8 @@
     "Game.BaseSystem",
     "Game.DayNight",
     "Game.Lighting",
-    "Game.Building"  ],
+    "Game.Building"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
