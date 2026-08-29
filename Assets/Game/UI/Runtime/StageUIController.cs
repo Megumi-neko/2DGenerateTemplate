@@ -1,4 +1,5 @@
 using System;
+using Game.BaseSystem;
 using Game.Building;
 using Game.DayNight;
 using UnityEngine;
@@ -35,8 +36,13 @@ namespace Game.UI
         [SerializeField] private Button constructButton;
         [SerializeField] private Button settingsCloseButton;
         [SerializeField] private Button constructCloseButton;
+        [SerializeField] private Button backToMainMenuButton;
+        [SerializeField] private Button exitButton;
         [SerializeField] private GameObject settingsPanel;
         [SerializeField] private GameObject constructPanel;
+
+        [Header("Scene Flow")]
+        [SerializeField] private string mainMenuSceneName = "MainMenu";
 
         private int coinCount;
         private bool eventsSubscribed;
@@ -60,6 +66,7 @@ namespace Game.UI
             coinCount = coinInventory == null
                 ? Mathf.Max(0, initialCoinCount)
                 : coinInventory.Coins;
+            ResolveSettingsButtons();
             ConfigureButtonListeners();
             CloseSettings();
             CloseConstruct();
@@ -298,6 +305,67 @@ namespace Game.UI
                 constructCloseButton.onClick.RemoveListener(CloseConstruct);
                 constructCloseButton.onClick.AddListener(CloseConstruct);
             }
+
+            if (backToMainMenuButton != null)
+            {
+                backToMainMenuButton.onClick.RemoveListener(ReturnToMainMenu);
+                backToMainMenuButton.onClick.AddListener(ReturnToMainMenu);
+            }
+
+            if (exitButton != null)
+            {
+                exitButton.onClick.RemoveListener(QuitGame);
+                exitButton.onClick.AddListener(QuitGame);
+            }
+        }
+
+        private void ResolveSettingsButtons()
+        {
+            if (settingsPanel == null)
+            {
+                return;
+            }
+
+            if (backToMainMenuButton == null)
+            {
+                Transform button = settingsPanel.transform.Find("BackToMainMenu");
+                if (button != null)
+                {
+                    backToMainMenuButton = button.GetComponent<Button>();
+                }
+            }
+
+            if (exitButton == null)
+            {
+                Transform button = settingsPanel.transform.Find("Exit");
+                if (button != null)
+                {
+                    exitButton = button.GetComponent<Button>();
+                }
+            }
+        }
+
+        public void ReturnToMainMenu()
+        {
+            if (string.IsNullOrWhiteSpace(mainMenuSceneName) || !SceneManagerSystem.HasInstance)
+            {
+                Debug.LogWarning("Cannot return to the main menu: SceneManagerSystem is unavailable or the scene name is empty.");
+                return;
+            }
+
+            if (SceneManagerSystem.Instance.LoadScene(mainMenuSceneName) == SceneLoadRequestStatus.Accepted)
+            {
+                CloseSettings();
+            }
+        }
+
+        public void QuitGame()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
         }
 
         private static void SetPanelVisibility(GameObject panel, bool visible)
