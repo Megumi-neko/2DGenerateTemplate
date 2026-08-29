@@ -1,0 +1,21 @@
+{
+  "name": "Game.BaseSystem.Tests",
+  "rootNamespace": "Game.BaseSystem.Tests",
+  "references": [
+    "Game.BaseSystem"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
