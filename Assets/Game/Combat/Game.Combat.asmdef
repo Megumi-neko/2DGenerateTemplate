@@ -1,0 +1,18 @@
+{
+  "name": "Game.Combat",
+  "rootNamespace": "Game.Combat",
+  "references": [
+    "Game.BaseSystem",
+    "Game.DayNight",
+    "Game.Lighting"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
