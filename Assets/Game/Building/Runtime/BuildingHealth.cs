@@ -13,6 +13,7 @@ namespace Game.Building
 
         public event Action<BuildingHealth, float> Damaged;
         public event Action<BuildingHealth> Died;
+        public event Action<BuildingHealth> Changed;
         public float MaxHealth => maxHealth;
         public float CurrentHealth => currentHealth;
         public float NormalizedHealth => maxHealth <= 0f ? 0f : currentHealth / maxHealth;
@@ -30,6 +31,7 @@ namespace Game.Building
             maxHealth = Mathf.Max(1f, value);
             currentHealth = maxHealth;
             isDead = false;
+            Changed?.Invoke(this);
         }
 
         public bool TakeDamage(float amount)
@@ -38,6 +40,7 @@ namespace Game.Building
             float applied = Mathf.Min(currentHealth, amount);
             currentHealth -= applied;
             Damaged?.Invoke(this, applied);
+            Changed?.Invoke(this);
             if (currentHealth > 0f) return true;
             currentHealth = 0f;
             isDead = true;
@@ -49,6 +52,7 @@ namespace Game.Building
         {
             if (isDead || float.IsNaN(amount) || float.IsInfinity(amount) || amount <= 0f) return;
             currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+            Changed?.Invoke(this);
         }
     }
 }

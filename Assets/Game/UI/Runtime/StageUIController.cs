@@ -1,6 +1,8 @@
 using System;
+using DG.Tweening;
 using Game.BaseSystem;
 using Game.Building;
+using Game.Combat;
 using Game.DayNight;
 using Game.Lighting;
 using UnityEngine;
@@ -51,6 +53,16 @@ namespace Game.UI
         [SerializeField, Min(0)] private int baseIntensityUpgradeCost = 2;
         [SerializeField, Min(0)] private int baseRangeUpgradeCost = 2;
 
+        [Header("Health")]
+        [SerializeField] private Health mainTowerHealth;
+        [SerializeField] private Image healthBarFill;
+        [SerializeField] private Text healthPoint;
+        [SerializeField] private SpriteRenderer mainTowerRenderer;
+        [SerializeField] private Color damageFlashColor = new Color(1f, 0.25f, 0.25f, 1f);
+        [SerializeField, Min(0f)] private float damageFlashDuration = 0.12f;
+        [SerializeField, Min(1)] private int damageFlashLoops = 2;
+        [SerializeField, Min(0f)] private float healthBarTweenDuration = 0.25f;
+
         [Header("Scene Flow")]
         [SerializeField] private string mainMenuSceneName = "MainMenu";
 
@@ -65,6 +77,11 @@ namespace Game.UI
         private bool savedConstructCloseInteractable;
         private bool savedBackToMainMenuInteractable;
         private bool savedExitInteractable;
+        private Tween healthBarTween;
+        private Tween damageFlashTween;
+        private Color mainTowerBaseColor = Color.white;
+        private DayNightPhase previousDayNightPhase;
+        private bool hasPreviousDayNightPhase;
 
         public int CoinCount => coinCount;
         public GameObject ConstructPanel => constructPanel;
@@ -88,6 +105,7 @@ namespace Game.UI
                 : coinInventory.Coins;
             ResolveSettingsButtons();
             ResolveUpgradeButtons();
+            ResolveHealthUI();
             ConfigureButtonListeners();
             EnsureDayNightLightingController();
             CloseSettings();
@@ -95,6 +113,9 @@ namespace Game.UI
             RefreshCoinCount(coinCount);
             RefreshDayNight(dayNightSystem == null ? DayNightPhase.Day : dayNightSystem.CurrentPhase,
                 dayNightSystem == null ? 1 : dayNightSystem.CurrentDay);
+            previousDayNightPhase = dayNightSystem == null ? DayNightPhase.Day : dayNightSystem.CurrentPhase;
+            hasPreviousDayNightPhase = true;
+            RefreshHealthUI(false);
         }
 
         private void Start()
@@ -109,16 +130,19 @@ private void OnEnable()
         {
             ResolveSettingsButtons();
             ResolveUpgradeButtons();
+            ResolveHealthUI();
             ConfigureButtonListeners();
             SubscribeToEvents();
             if (coinInventory != null)
             {
                 coinInventory.CoinsChanged += OnCoinsChanged;
             }
+            SubscribeHealth();
             if (dayNightSystem != null)
             {
                 RefreshDayNight(dayNightSystem.CurrentPhase, dayNightSystem.CurrentDay);
             }
+            RefreshHealthUI(false);
         }
 
         private void OnDisable()
@@ -127,6 +151,15 @@ private void OnEnable()
             if (coinInventory != null)
             {
                 coinInventory.CoinsChanged -= OnCoinsChanged;
+            }
+            UnsubscribeHealth();
+            healthBarTween?.Kill();
+            healthBarTween = null;
+            damageFlashTween?.Kill();
+            damageFlashTween = null;
+            if (mainTowerRenderer != null)
+            {
+                mainTowerRenderer.color = mainTowerBaseColor;
             }
         }
 
@@ -330,6 +363,105 @@ private void OnEnable()
             }
         }
 
+        private void ResolveHealthUI()
+        {
+            if (mainTowerRenderer != null)
+            {
+                mainTowerBaseColor = mainTowerRenderer.color;
+            }
+
+            if (healthBarFill != null)
+            {
+                healthBarFill.type = Image.Type.Filled;
+                healthBarFill.fillMethod = Image.FillMethod.Horizontal;
+            }
+
+            if (mainTowerHealth == null)
+            {
+                Debug.LogWarning($"[{nameof(StageUIController)}] Main Tower Health reference is not configured.", this);
+            }
+            if (healthBarFill == null || healthPoint == null)
+            {
+                Debug.LogWarning($"[{nameof(StageUIController)}] HealthBar fill or HealthPoint reference is not configured.", this);
+            }
+            if (mainTowerRenderer == null)
+            {
+                Debug.LogWarning($"[{nameof(StageUIController)}] Main Tower renderer reference is not configured.", this);
+            }
+        }
+
+        private void SubscribeHealth()
+        {
+            ResolveHealthUI();
+            if (mainTowerHealth != null)
+            {
+                mainTowerHealth.Changed += OnHealthChanged;
+                mainTowerHealth.Damaged += OnHealthDamaged;
+                mainTowerHealth.Died += OnHealthDied;
+            }
+        }
+
+        private void UnsubscribeHealth()
+        {
+            if (mainTowerHealth == null) return;
+            mainTowerHealth.Changed -= OnHealthChanged;
+            mainTowerHealth.Damaged -= OnHealthDamaged;
+            mainTowerHealth.Died -= OnHealthDied;
+        }
+
+        private void OnHealthChanged(Health _) { RefreshHealthUI(true); }
+
+        private void OnHealthDamaged(Health _, float __)
+        {
+            RefreshHealthUI(true);
+            PlayDamageFlash();
+        }
+
+        private void OnHealthDied(Health _) { RefreshHealthUI(true); }
+
+        private void PlayDamageFlash()
+        {
+            if (mainTowerRenderer == null || damageFlashDuration <= 0f)
+            {
+                return;
+            }
+
+            damageFlashTween?.Kill();
+            mainTowerRenderer.color = damageFlashColor;
+            damageFlashTween = DOTween.Sequence()
+                .Append(mainTowerRenderer.DOColor(mainTowerBaseColor, damageFlashDuration))
+                .SetLoops(Mathf.Max(1, damageFlashLoops), LoopType.Yoyo)
+                .OnComplete(() =>
+                {
+                    mainTowerRenderer.color = mainTowerBaseColor;
+                    damageFlashTween = null;
+                });
+        }
+
+        private void RefreshHealthUI(bool animate)
+        {
+            if (mainTowerHealth == null) return;
+            float target = Mathf.Clamp01(mainTowerHealth.NormalizedHealth);
+            if (healthPoint != null)
+            {
+                healthPoint.text = $"{Mathf.CeilToInt(mainTowerHealth.CurrentHealth)}/{Mathf.CeilToInt(mainTowerHealth.MaxHealth)}";
+            }
+            if (healthBarFill == null) return;
+            healthBarTween?.Kill();
+            if (!animate || healthBarTweenDuration <= 0f)
+            {
+                healthBarFill.fillAmount = target;
+                return;
+            }
+            healthBarTween = DOTween.To(
+                    () => healthBarFill.fillAmount,
+                    value => healthBarFill.fillAmount = value,
+                    target,
+                    healthBarTweenDuration)
+                .SetEase(Ease.OutCubic)
+                .OnComplete(() => healthBarTween = null);
+        }
+
         private void SubscribeToEvents()
         {
             if (eventsSubscribed)
@@ -361,6 +493,15 @@ private void OnEnable()
 
         private void OnDayNightStateChanged(DayNightStateChanged state)
         {
+            bool enteredDay = hasPreviousDayNightPhase &&
+                previousDayNightPhase == DayNightPhase.Night &&
+                state.Phase == DayNightPhase.Day;
+            if (enteredDay && mainTowerHealth != null)
+            {
+                mainTowerHealth.ResetHealth(mainTowerHealth.MaxHealth);
+            }
+            previousDayNightPhase = state.Phase;
+            hasPreviousDayNightPhase = true;
             RefreshDayNight(state.Phase, state.Day);
         }
 

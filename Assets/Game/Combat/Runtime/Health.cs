@@ -14,6 +14,7 @@ namespace Game.Combat
 
         public event Action<Health, float> Damaged;
         public event Action<Health> Died;
+        public event Action<Health> Changed;
 
         public float MaxHealth => maxHealth;
         public float CurrentHealth => currentHealth;
@@ -38,6 +39,7 @@ namespace Game.Combat
             maxHealth = SanitizeMaximum(newMaxHealth);
             currentHealth = maxHealth;
             isDead = false;
+            Changed?.Invoke(this);
         }
 
         public bool TakeDamage(float amount)
@@ -50,6 +52,7 @@ namespace Game.Combat
             float appliedDamage = Mathf.Min(currentHealth, amount);
             currentHealth -= appliedDamage;
             Damaged?.Invoke(this, appliedDamage);
+            Changed?.Invoke(this);
 
             if (currentHealth > 0f)
             {
@@ -70,6 +73,7 @@ namespace Game.Combat
             }
 
             currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+            Changed?.Invoke(this);
         }
 
         private static float SanitizeMaximum(float value)
