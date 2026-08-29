@@ -17,7 +17,9 @@ MonoBehaviour:
     path: Assets/Scenes/Stage 2.unity
   - name: Stage
     path: Assets/Scenes/Stage.unity
-  - name: MainMenu
-    path: Assets/Scenes/MainMenu.unity
   - name: Stage 3
     path: Assets/Scenes/Stage 3.unity
+  - name: Stage 1
+    path: Assets/Scenes/Stage 1.unity
+  - name: MainMenu
+    path: Assets/Scenes/MainMenu.unity

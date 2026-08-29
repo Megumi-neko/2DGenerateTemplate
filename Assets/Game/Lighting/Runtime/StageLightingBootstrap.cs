@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Game.DayNight;
 using UnityEngine;
 
 namespace Game.Lighting
@@ -268,7 +269,10 @@ namespace Game.Lighting
             candleEmitter.MaximumFocusMultiplier = maximumFocusMultiplier;
             candleEmitter.EdgeSoftness = edgeSoftness;
             candleEmitter.Direction = Vector2.right;
-            candleEmitter.SetEmitting(true);
+            DayNightSystem currentDayNightSystem = FindObjectOfType<DayNightSystem>();
+            bool shouldEmit = currentDayNightSystem == null ||
+                currentDayNightSystem.CurrentPhase == DayNightPhase.Night;
+            candleEmitter.SetEmitting(shouldEmit);
 
             InnerCircleLight2D innerCircle = existingCandle.GetComponent<InnerCircleLight2D>();
             if (innerCircle == null)
