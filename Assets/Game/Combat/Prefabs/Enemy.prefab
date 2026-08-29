@@ -119,12 +119,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   text: {fileID: 0}
   canvasGroup: {fileID: 0}
-  targetCamera: {fileID: 0}
   mergeWindow: 0.12
   visibleDuration: 0.65
   riseDistance: 0.6
   startScale: 1.2
-  damageColor: {r: 0.65, g: 0.95, b: 1, a: 1}
+  startDamageColor: {r: 1, g: 0.65, b: 0.65, a: 1}
+  redApproachDamage: 100
 --- !u!1 &4535900135814304273
 GameObject:
   m_ObjectHideFlags: 0
@@ -217,6 +217,7 @@ GameObject:
   - component: {fileID: 6537052089723336099}
   - component: {fileID: 8600537055688936295}
   - component: {fileID: 7637369159434686584}
+  - component: {fileID: 621463761672229318}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -357,6 +358,7 @@ MonoBehaviour:
   attackRange: 0.75
   attackInterval: 1
   illuminationSampleInterval: 0.1
+  minimumSectorSpeedMultiplier: 0.5
   visualRoot: {fileID: 0}
   visual: {fileID: 0}
   bossColor: {r: 1, g: 0.25, b: 0.2, a: 1}
@@ -367,3 +369,24 @@ MonoBehaviour:
   faceCamera: 1
   targetCamera: {fileID: 0}
   coinInventory: {fileID: 0}
+--- !u!95 &621463761672229318
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7772592459755990152}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 90b3c08760de9f74eb02a46bdc7902ea, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

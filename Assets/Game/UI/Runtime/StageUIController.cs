@@ -45,6 +45,8 @@ namespace Game.UI
         [SerializeField] private Button rangeUpgradeButton;
         [SerializeField] private Text intensityUpgradeText;
         [SerializeField] private Text rangeUpgradeText;
+        [SerializeField] private Text intensityLevelText;
+        [SerializeField] private Text rangeLevelText;
         [SerializeField] private StageLightingBootstrap stageLightingBootstrap;
         [SerializeField, Min(0)] private int baseIntensityUpgradeCost = 2;
         [SerializeField, Min(0)] private int baseRangeUpgradeCost = 2;
@@ -243,7 +245,7 @@ private void OnEnable()
             coinCount = Mathf.Max(0, count);
             if (coinText != null)
             {
-                coinText.text = $"影结晶：{coinCount}";
+                coinText.text = $"{coinCount}";
             }
 
             CoinCountChanged?.Invoke(coinCount);
@@ -435,6 +437,16 @@ private void ResolveUpgradeButtons()
             {
                 rangeUpgradeText = rangeUpgradeButton.GetComponentInChildren<Text>(true);
             }
+
+            if (intensityLevelText == null && intensityUpgradeButton != null)
+            {
+                intensityLevelText = FindChildText(intensityUpgradeButton.transform, "Level");
+            }
+
+            if (rangeLevelText == null && rangeUpgradeButton != null)
+            {
+                rangeLevelText = FindChildText(rangeUpgradeButton.transform, "Level");
+            }
         }
 
         private void OnIntensityUpgradeClicked()
@@ -489,10 +501,26 @@ private void RefreshUpgradeButtons()
 
             SetUpgradeLabel(intensityUpgradeText, "质量升级：", intensityCost, canUpgradeIntensity);
             SetUpgradeLabel(rangeUpgradeText, "高度升级：", rangeCost, canUpgradeRange);
+            SetLevelLabel(intensityLevelText, stageLightingBootstrap.IntensityUpgradeLevel);
+            SetLevelLabel(rangeLevelText, stageLightingBootstrap.RangeUpgradeLevel);
             SetInteractable(intensityUpgradeButton, isDay && canUpgradeIntensity &&
                 coinCount >= intensityCost);
             SetInteractable(rangeUpgradeButton, isDay && canUpgradeRange &&
                 coinCount >= rangeCost);
+        }
+
+        private static void SetLevelLabel(Text label, int level)
+        {
+            if (label != null)
+            {
+                label.text = $"Lv：{Mathf.Max(0, level)}";
+            }
+        }
+
+        private static Text FindChildText(Transform parent, string childName)
+        {
+            Transform child = parent == null ? null : parent.Find(childName);
+            return child == null ? null : child.GetComponent<Text>();
         }
 
         private static void SetUpgradeLabel(Text label, string prefix, int cost, bool canUpgrade)

@@ -249,7 +249,7 @@ namespace Game.UI
             Text label = lookoutTowerButton.GetComponentInChildren<Text>();
             if (label != null)
             {
-                label.text = $"{lookoutTower.DisplayName}\n影结晶：{lookoutTower.CoinCost}";
+                label.text = $"{lookoutTower.DisplayName}\n{lookoutTower.CoinCost}";
             }
         }
 

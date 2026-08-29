@@ -1,3 +1,4 @@
+using System.Collections;
 using System;
 using System.Collections.Generic;
 using Game.Lighting;
@@ -21,6 +22,11 @@ namespace Game.Combat
         [SerializeField, Range(0.01f, 1f)] private float minimumSectorSpeedMultiplier = 0.5f;
 
         [Header("Visual")]
+        
+        [SerializeField] private Animator animator;
+        [SerializeField] private string walkAnimationState = "GhostWalk";
+        [SerializeField] private string deathAnimationState = "GhostBoom";
+        [SerializeField, Min(0f)] private float deathAnimationDuration = 1.35f;
         [SerializeField] private Transform visualRoot;
 
         [SerializeField] private SpriteRenderer visual;
@@ -49,7 +55,10 @@ namespace Game.Combat
         private bool isSpawned;
         [SerializeField] private CoinInventory coinInventory;
         private int coinReward;
-        private bool rewardGranted;
+        
+        private bool isDying;
+        private Coroutine deathRoutine;
+private bool rewardGranted;
 
         public static IReadOnlyList<EnemyController> ActiveEnemies => ActiveEnemiesInternal;
         public Health Health => health;
@@ -64,8 +73,9 @@ namespace Game.Combat
             ActiveEnemiesInternal.Clear();
         }
 
-        private void Awake()
+private void Awake()
         {
+            animator = animator == null ? GetComponent<Animator>() : animator;
             health = GetComponent<Health>();
             health.Died += OnDied;
             baseScale = transform.localScale;
@@ -150,6 +160,7 @@ namespace Game.Combat
 
             Vector2 currentPosition = transform.position;
             Vector2 targetPosition = targetTransform.position;
+            UpdateFacing(targetPosition.x - currentPosition.x);
             float distance = Vector2.Distance(currentPosition, targetPosition);
 
             if (distance > attackRange)
@@ -187,10 +198,22 @@ namespace Game.Combat
             Action<EnemyController> onReleaseRequested,
             int reward = 0)
         {
-            target = targetHealth;
+            isDying = false;
+            if (deathRoutine != null)
+            {
+                StopCoroutine(deathRoutine);
+                deathRoutine = null;
+            }
+
+            PlayAnimationState(walkAnimationState);
+target = targetHealth;
             towerTarget = targetHealth;
             buildingTarget = null;
             targetTransform = targetHealth == null ? null : targetHealth.transform;
+            if (targetTransform != null)
+            {
+                UpdateFacing(targetTransform.position.x - transform.position.x);
+            }
             ThreatLevel = Mathf.Clamp(
                 threatLevel,
                 EnemyStats.MinimumThreatLevel,
@@ -259,13 +282,20 @@ namespace Game.Combat
             return IsAlive && health.TakeDamage(amount);
         }
 
-        public void RequestRelease()
+public void RequestRelease()
         {
             if (!isSpawned)
             {
                 return;
             }
 
+            if (deathRoutine != null)
+            {
+                StopCoroutine(deathRoutine);
+                deathRoutine = null;
+            }
+
+            isDying = false;
             isSpawned = false;
             ActiveEnemiesInternal.Remove(this);
             Action<EnemyController> callback = releaseRequested;
@@ -312,6 +342,17 @@ namespace Game.Combat
             return false;
         }
 
+        private void UpdateFacing(float horizontalDirection)
+        {
+            if (visual == null || Mathf.Abs(horizontalDirection) < 0.001f)
+            {
+                return;
+            }
+
+            // GhostWalk faces left by default, so flip when moving toward the right.
+            visual.flipX = horizontalDirection > 0f;
+        }
+
         private float GetMovementSpeedMultiplier()
         {
             if (!IlluminationSystem.IsAffectedByMinimumSector(WorldPosition))
@@ -339,7 +380,7 @@ namespace Game.Combat
             }
         }
 
-        private void OnDied(Health _)
+private void OnDied(Health _)
         {
             if (!rewardGranted)
             {
@@ -352,10 +393,52 @@ namespace Game.Combat
                 coinInventory?.Add(coinReward);
             }
 
+            if (isDying || !isSpawned)
+            {
+                return;
+            }
+
+            isDying = true;
+            PlayAnimationState(deathAnimationState);
+            deathRoutine = StartCoroutine(ReleaseAfterDeathAnimation());
+        }
+
+        private IEnumerator ReleaseAfterDeathAnimation()
+        {
+            yield return new WaitForSeconds(GetDeathAnimationDuration());
+            deathRoutine = null;
             RequestRelease();
         }
 
-        private void OnDrawGizmosSelected()
+        private float GetDeathAnimationDuration()
+        {
+            if (animator != null && animator.runtimeAnimatorController != null)
+            {
+                AnimationClip[] clips = animator.runtimeAnimatorController.animationClips;
+                for (int i = 0; i < clips.Length; i++)
+                {
+                    if (clips[i] != null && clips[i].name == deathAnimationState)
+                    {
+                        return Mathf.Max(0.01f, clips[i].length);
+                    }
+                }
+            }
+
+            return Mathf.Max(0.01f, deathAnimationDuration);
+        }
+
+        private void PlayAnimationState(string stateName)
+        {
+            if (animator == null || string.IsNullOrWhiteSpace(stateName))
+            {
+                return;
+            }
+
+            animator.Play(stateName, 0, 0f);
+        }
+
+        
+private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(transform.position, attackRange);
@@ -367,7 +450,7 @@ namespace Game.Combat
 
 
 
-        private void OnValidate()
+private void OnValidate()
         {
             attackRange = Mathf.Max(0.01f, attackRange);
             attackInterval = Mathf.Max(0.05f, attackInterval);
@@ -377,7 +460,7 @@ namespace Game.Combat
             baseScaleMultiplier = Mathf.Max(1f, baseScaleMultiplier);
             threatScaleStep = Mathf.Max(0f, threatScaleStep);
             threatScaleExponent = Mathf.Max(0.01f, threatScaleExponent);
-
+            deathAnimationDuration = Mathf.Max(0f, deathAnimationDuration);
         }
     }
 }

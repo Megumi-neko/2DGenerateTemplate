@@ -250,7 +250,7 @@ namespace Game.Building
             if (sourceRenderer != null)
             {
                 gridRenderer.sortingLayerID = sourceRenderer.sortingLayerID;
-                gridRenderer.sortingOrder = sourceRenderer.sortingOrder + 1;
+                gridRenderer.sortingOrder = 0;
             }
         }
 
