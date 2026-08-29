@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Game.DayNight;
+using Game.Lighting;
 using UnityEngine;
 
 namespace Game.Building
@@ -13,6 +14,7 @@ namespace Game.Building
         [SerializeField] private CoinInventory coinInventory;
         [SerializeField] private Transform buildingsRoot;
         [SerializeField] private BuildDefinition defaultDefinition;
+        [SerializeField] private LightEmitter2D buildLight;
 
         private readonly List<BuildInstance> builds = new List<BuildInstance>();
         private readonly BuildPlacementValidator validator = new BuildPlacementValidator();
@@ -21,6 +23,7 @@ namespace Game.Building
         public BuildPlacementFailureReason LastFailureReason { get; private set; }
         public BuildGrid Grid => buildGrid;
         public BuildDefinition DefaultDefinition => defaultDefinition;
+        public LightEmitter2D BuildLight => buildLight;
 
         private void Awake()
         {
@@ -37,7 +40,8 @@ namespace Game.Building
                 cellPosition,
                 dayNightSystem,
                 buildGrid,
-                coinInventory);
+                coinInventory,
+                buildLight);
             LastFailureReason = result.Reason;
             return result;
         }
@@ -143,6 +147,11 @@ namespace Game.Building
             LastFailureReason = BuildPlacementFailureReason.None;
         }
 
+        internal void ConfigureLightingForTests(LightEmitter2D light)
+        {
+            buildLight = light;
+        }
+
         private void ResolveReferences()
         {
             if (buildGrid == null)
@@ -158,6 +167,12 @@ namespace Game.Building
             if (coinInventory == null)
             {
                 coinInventory = GetComponent<CoinInventory>() ?? FindObjectOfType<CoinInventory>();
+            }
+
+            if (buildLight == null)
+            {
+                StageLightingBootstrap bootstrap = FindObjectOfType<StageLightingBootstrap>();
+                buildLight = bootstrap == null ? null : bootstrap.CandleEmitter;
             }
         }
 

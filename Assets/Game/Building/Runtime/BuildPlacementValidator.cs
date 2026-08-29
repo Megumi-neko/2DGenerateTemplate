@@ -1,4 +1,5 @@
 using Game.DayNight;
+using Game.Lighting;
 using UnityEngine;
 
 namespace Game.Building
@@ -10,12 +11,14 @@ namespace Game.Building
         MissingPrefab,
         WrongPhase,
         OutsideBuildBounds,
+        OutsideLightRange,
         UnbuildableCell,
         Occupied,
         InsufficientCoins,
         InvalidFootprint,
         MissingGrid,
-        MissingInventory
+        MissingInventory,
+        MissingBuildLight
     }
 
     public readonly struct BuildPlacementResult
@@ -42,7 +45,8 @@ namespace Game.Building
             Vector3Int cellPosition,
             DayNightSystem dayNightSystem,
             BuildGrid buildGrid,
-            CoinInventory coinInventory)
+            CoinInventory coinInventory,
+            LightEmitter2D buildLight)
         {
             if (definition == null)
             {
@@ -80,6 +84,20 @@ namespace Game.Building
             if (!buildGrid.AreCellsBuildable(cellPosition, footprint))
             {
                 return Invalid(BuildPlacementFailureReason.UnbuildableCell);
+            }
+
+            if (buildLight == null)
+            {
+                return Invalid(BuildPlacementFailureReason.MissingBuildLight);
+            }
+
+            if (!buildGrid.IsFootprintInsideCircle(
+                    cellPosition,
+                    footprint,
+                    buildLight.WorldPosition,
+                    buildLight.MaximumEffectiveRange))
+            {
+                return Invalid(BuildPlacementFailureReason.OutsideLightRange);
             }
 
             if (!buildGrid.CanOccupy(cellPosition, footprint))

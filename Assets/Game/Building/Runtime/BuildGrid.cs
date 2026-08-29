@@ -14,6 +14,7 @@ namespace Game.Building
 
         private readonly Dictionary<Vector3Int, BuildInstance> occupiedCells =
             new Dictionary<Vector3Int, BuildInstance>();
+        private bool referencesConfiguredForTests;
 
         public Grid Grid
         {
@@ -93,6 +94,35 @@ namespace Game.Building
                 (footprint.x - 1) * cellSize.x * 0.5f,
                 (footprint.y - 1) * cellSize.y * 0.5f,
                 0f);
+        }
+
+        public bool IsFootprintInsideCircle(
+            Vector3Int cellPosition,
+            Vector2Int footprint,
+            Vector2 circleCenter,
+            float radius)
+        {
+            if (footprint.x <= 0 || footprint.y <= 0 ||
+                !IsFinite(circleCenter) || !IsFinite(radius) || radius < 0f)
+            {
+                return false;
+            }
+
+            Vector3Int farCell = cellPosition + new Vector3Int(
+                footprint.x,
+                footprint.y,
+                0);
+            Vector3 bottomLeft = GetCellWorldPosition(cellPosition);
+            Vector3 bottomRight = GetCellWorldPosition(
+                new Vector3Int(farCell.x, cellPosition.y, cellPosition.z));
+            Vector3 topLeft = GetCellWorldPosition(
+                new Vector3Int(cellPosition.x, farCell.y, cellPosition.z));
+            Vector3 topRight = GetCellWorldPosition(farCell);
+            float radiusSquared = radius * radius;
+            return IsInsideCircle(bottomLeft, circleCenter, radiusSquared) &&
+                IsInsideCircle(bottomRight, circleCenter, radiusSquared) &&
+                IsInsideCircle(topLeft, circleCenter, radiusSquared) &&
+                IsInsideCircle(topRight, circleCenter, radiusSquared);
         }
 
         public bool IsInsideBounds(Vector3Int cellPosition, Vector2Int footprint)
@@ -238,6 +268,7 @@ namespace Game.Building
             grid = gridToUse;
             buildableTilemap = null;
             buildBounds = bounds;
+            referencesConfiguredForTests = true;
             occupiedCells.Clear();
         }
 
@@ -251,8 +282,48 @@ namespace Game.Building
             return buildableTilemap == null ? default : buildableTilemap.cellBounds;
         }
 
+        private Vector3 GetCellWorldPosition(Vector3Int cellPosition)
+        {
+            ResolveReferences();
+            if (buildableTilemap != null)
+            {
+                return buildableTilemap.CellToWorld(cellPosition);
+            }
+
+            if (grid != null)
+            {
+                return grid.CellToWorld(cellPosition);
+            }
+
+            return cellPosition;
+        }
+
+        private static bool IsInsideCircle(
+            Vector3 worldPosition,
+            Vector2 circleCenter,
+            float radiusSquared)
+        {
+            Vector2 offset = new Vector2(worldPosition.x, worldPosition.y) - circleCenter;
+            return offset.sqrMagnitude <= radiusSquared + 0.0001f;
+        }
+
+        private static bool IsFinite(Vector2 value)
+        {
+            return IsFinite(value.x) && IsFinite(value.y);
+        }
+
+        private static bool IsFinite(float value)
+        {
+            return !float.IsNaN(value) && !float.IsInfinity(value);
+        }
+
         private void ResolveReferences()
         {
+            if (referencesConfiguredForTests)
+            {
+                return;
+            }
+
             if (grid == null)
             {
                 grid = FindObjectOfType<Grid>();

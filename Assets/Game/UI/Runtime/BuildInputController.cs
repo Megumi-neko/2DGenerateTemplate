@@ -12,10 +12,11 @@ namespace Game.UI
     {
         [SerializeField] private BuildSystem buildSystem;
         [SerializeField] private BuildPreview buildPreview;
-            [SerializeField] private BuildAreaGridPreview areaGridPreview;
+        [SerializeField] private BuildAreaGridPreview areaGridPreview;
         [SerializeField] private BuildFootprintPreview footprintPreview;
         [SerializeField] private BuildDefinition lookoutTower;
         [SerializeField] private Camera targetCamera;
+        [SerializeField] private BuildPlacementCameraController placementCameraController;
         [SerializeField] private StageUIController stageUIController;
 
         private Button lookoutTowerButton;
@@ -52,6 +53,8 @@ namespace Game.UI
                 skipPointerClick = false;
             }
 
+            placementCameraController?.UpdatePlacement();
+
             if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
             {
                 CancelPlacement();
@@ -60,7 +63,7 @@ namespace Game.UI
 
             if (!TryGetPointerWorldPosition(out Vector3 worldPosition))
             {
-                buildPreview.Hide();
+                buildPreview?.Hide();
                 if (footprintPreview != null)
                 {
                     footprintPreview.Clear();
@@ -72,10 +75,13 @@ namespace Game.UI
             BuildPlacementResult result = buildSystem.ValidatePlacement(
                 lookoutTower,
                 currentCellPosition);
-            buildPreview.Show(
-                lookoutTower,
-                buildSystem.CellToWorld(currentCellPosition, lookoutTower),
-                result.IsValid);
+            if (buildPreview != null)
+            {
+                buildPreview.Show(
+                    lookoutTower,
+                    buildSystem.CellToWorld(currentCellPosition, lookoutTower),
+                    result.IsValid);
+            }
             if (footprintPreview != null)
             {
                 footprintPreview.Show(
@@ -99,7 +105,7 @@ namespace Game.UI
         public void BeginLookoutTowerPlacement()
         {
             ResolveReferences();
-            if (buildSystem == null || lookoutTower == null)
+            if (buildSystem == null || lookoutTower == null || buildPreview == null)
             {
                 return;
             }
@@ -114,6 +120,13 @@ namespace Game.UI
 
             isPlacing = true;
             skipPointerClick = true;
+            if (placementCameraController != null &&
+                !placementCameraController.BeginPlacement())
+            {
+                isPlacing = false;
+                return;
+            }
+
             if (areaGridPreview != null)
             {
                 areaGridPreview.Show();
@@ -143,6 +156,8 @@ namespace Game.UI
             {
                 areaGridPreview.Hide();
             }
+
+            placementCameraController?.EndPlacement();
         }
 
         private void OnDayNightStateChanged(DayNightStateChanged state)
@@ -183,6 +198,11 @@ namespace Game.UI
             if (targetCamera == null)
             {
                 targetCamera = Camera.main;
+            }
+
+            if (placementCameraController == null)
+            {
+                placementCameraController = FindObjectOfType<BuildPlacementCameraController>();
             }
 
             if (stageUIController == null)

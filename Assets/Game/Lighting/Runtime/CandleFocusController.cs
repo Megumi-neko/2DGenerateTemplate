@@ -17,12 +17,13 @@ namespace Game.Lighting
         [SerializeField] private bool allowSectorAngleInput = true;
 
         private bool isAimLocked;
+        private bool forceAimLock;
         private Vector2 pointerWorldPosition;
         private bool hasPointerWorldPosition;
 
         public Camera TargetCamera => targetCamera;
         public LightEmitter2D ControlledEmitter => controlledEmitter;
-        public bool IsAimLocked => isAimLocked;
+        public bool IsAimLocked => isAimLocked || forceAimLock;
         public bool HasPointerWorldPosition => hasPointerWorldPosition;
         public Vector2 PointerWorldPosition => pointerWorldPosition;
 
@@ -64,28 +65,45 @@ namespace Game.Lighting
 
             if (allowSectorAngleInput)
             {
-                float scroll = Input.mouseScrollDelta.y;
-                if (Mathf.Abs(scroll) > GameplayPlaneEpsilon)
-                {
-                    controlledEmitter.SectorAngle -= scroll * sectorAngleStep;
-                }
+                ApplySectorAngleInput(Input.mouseScrollDelta.y);
             }
 
             hasPointerWorldPosition = TryGetPointerWorldPosition(out pointerWorldPosition);
-            if (hasPointerWorldPosition && !isAimLocked)
+            if (hasPointerWorldPosition && !IsAimLocked)
             {
                 controlledEmitter.SetDirectionTowards(pointerWorldPosition);
             }
         }
 
+        internal void ApplySectorAngleInput(float scroll)
+        {
+            if (controlledEmitter == null || IsAimLocked ||
+                Mathf.Abs(scroll) <= GameplayPlaneEpsilon)
+            {
+                return;
+            }
+
+            controlledEmitter.SectorAngle -= scroll * sectorAngleStep;
+        }
+
         public void ToggleAimLock()
         {
+            if (forceAimLock)
+            {
+                return;
+            }
+
             isAimLocked = !isAimLocked;
         }
 
         public void SetAimLocked(bool value)
         {
             isAimLocked = value;
+        }
+
+        public void SetAimLockOverride(bool value)
+        {
+            forceAimLock = value;
         }
 
         public void Initialize(Camera cameraToUse, LightEmitter2D emitterToControl)
