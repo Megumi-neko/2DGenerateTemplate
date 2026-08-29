@@ -58823,6 +58823,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1146664608}
+  - {fileID: 7400001000000002}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1388045010
@@ -58840,7 +58841,9 @@ MonoBehaviour:
   targetCamera: {fileID: 1848669775}
   gameplayPlaneZ: 0
   darknessOpacity: 1
-  candlePrefab: {fileID: 7400000000000001, guid: f8c7e6d5b4a392817061504f3e2d1c0b, type: 3}
+  centralCandle: {fileID: 7400001000000001}
+  candlePrefab: {fileID: 0}
+  initialShape: 0
   candleWorldPosition: {x: 0, y: 0}
   candleWorldZ: -0.15
   baseRadius: 5
@@ -61250,7 +61253,7 @@ MonoBehaviour:
   coinInventory: {fileID: 3100000004}
   buildingsRoot: {fileID: 3100000002}
   defaultDefinition: {fileID: 11400000, guid: bbccddeeff00112233445566778899aa, type: 2}
-  buildLight: {fileID: 0}
+  buildLight: {fileID: 7400001000000006}
 --- !u!114 &3100000006
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61328,16 +61331,70 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetCamera: {fileID: 1848669775}
-  buildLight: {fileID: 0}
-  candleFocusController: {fileID: 0}
+  buildLight: {fileID: 7400001000000006}
+  candleFocusController: {fileID: 7400001000000008}
   cameraFramer: {fileID: 1848669778}
   gameplayPlaneZ: 0
   minimumBuildFieldOfView: 25
-  maximumBuildFieldOfView: 80
+  maximumBuildFieldOfView: 90
   zoomStep: 5
   movementSpeed: 8
   movementFieldOfViewThreshold: 55
   boundaryPadding: 0.1
+--- !u!1001 &7400001000000000
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1388045008}
+    m_Modifications:
+    - target: {fileID: 7400000000000001, guid: f8c7e6d5b4a392817061504f3e2d1c0b, type: 3}
+      propertyPath: m_Name
+      value: Stage Central Candle
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000002, guid: f8c7e6d5b4a392817061504f3e2d1c0b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000002, guid: f8c7e6d5b4a392817061504f3e2d1c0b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000002, guid: f8c7e6d5b4a392817061504f3e2d1c0b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.15
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f8c7e6d5b4a392817061504f3e2d1c0b, type: 3}
+--- !u!1 &7400001000000001 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7400000000000001, guid: f8c7e6d5b4a392817061504f3e2d1c0b, type: 3}
+  m_PrefabInstance: {fileID: 7400001000000000}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7400001000000002 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7400000000000002, guid: f8c7e6d5b4a392817061504f3e2d1c0b, type: 3}
+  m_PrefabInstance: {fileID: 7400001000000000}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7400001000000006 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7400000000000006, guid: f8c7e6d5b4a392817061504f3e2d1c0b, type: 3}
+  m_PrefabInstance: {fileID: 7400001000000000}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7400001000000007 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7400000000000007, guid: f8c7e6d5b4a392817061504f3e2d1c0b, type: 3}
+  m_PrefabInstance: {fileID: 7400001000000000}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7400001000000008 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7400000000000008, guid: f8c7e6d5b4a392817061504f3e2d1c0b, type: 3}
+  m_PrefabInstance: {fileID: 7400001000000000}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

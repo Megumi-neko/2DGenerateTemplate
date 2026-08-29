@@ -13,8 +13,11 @@ namespace Game.Lighting
         [SerializeField, Range(0f, 1f)] private float darknessOpacity = 0.96f;
 
         [Header("Central Candle")]
-        [Tooltip("Authored candle prefab. The bootstrap instantiates this instead of generating candle geometry.")]
+        [Tooltip("Optional authored candle already placed in the scene. When assigned, no candle object or visual is generated at runtime.")]
+        [SerializeField] private GameObject centralCandle;
+        [Tooltip("Legacy prefab fallback used only by scenes that have not yet been migrated to an authored candle.")]
         [SerializeField] private GameObject candlePrefab;
+        [SerializeField] private LightShape2D initialShape = LightShape2D.Sector;
         [SerializeField] private Vector2 candleWorldPosition;
         [SerializeField] private float candleWorldZ = -0.15f;
         [SerializeField, Min(0.01f)] private float baseRadius = 5f;
@@ -55,6 +58,7 @@ namespace Game.Lighting
         private float candleBaseRadius;
         private float candleBaseIntensity;
         private bool hasCapturedCandleScale;
+        private bool usesAuthoredCandle;
         private LightEmitter2D candleEmitter;
         private StageLightingCameraFramer cameraFramer;
         private int rangeUpgradeLevel;
@@ -62,6 +66,7 @@ namespace Game.Lighting
 
         public Camera TargetCamera => targetCamera;
         public float DarknessOpacity => darknessOpacity;
+        public GameObject CentralCandle => centralCandle;
         public LightEmitter2D CandleEmitter => candleEmitter;
         public InnerCircleLight2D InnerCircle => candleEmitter == null
             ? null
@@ -137,6 +142,13 @@ namespace Game.Lighting
 
         private void OnValidate()
         {
+            if (!System.Enum.IsDefined(typeof(LightShape2D), initialShape))
+            {
+                initialShape = LightShape2D.Sector;
+            }
+
+            baseRadius = Mathf.Max(0.01f, baseRadius);
+            innerRadiusMultiplier = Mathf.Clamp(innerRadiusMultiplier, 0.01f, 0.99f);
             maximumRangeUpgradeLevel = Mathf.Max(0, maximumRangeUpgradeLevel);
             rangeUpgradeAmount = Mathf.Max(0f, rangeUpgradeAmount);
             maximumIntensityUpgradeLevel = Mathf.Max(0, maximumIntensityUpgradeLevel);
@@ -196,24 +208,39 @@ namespace Game.Lighting
 
         private void EnsureCandle()
         {
-            GameObject existingCandle = FindChildByName("Stage Central Candle");
+            GameObject existingCandle = centralCandle;
+            bool isAuthoredCandle = existingCandle != null;
             if (existingCandle == null)
             {
-                existingCandle = FindChildByName("Stage 1 Central Candle");
-            }
+                existingCandle = FindChildByName("Stage Central Candle");
+                if (existingCandle == null)
+                {
+                    existingCandle = FindChildByName("Stage 1 Central Candle");
+                }
 
-            if (existingCandle == null && candlePrefab != null)
-            {
-                createdCandle = Instantiate(candlePrefab, transform, false);
-                createdCandle.name = "Stage Central Candle";
-                existingCandle = createdCandle;
+                isAuthoredCandle = existingCandle != null;
+                if (existingCandle == null && candlePrefab != null)
+                {
+                    createdCandle = Instantiate(candlePrefab, transform, false);
+                    createdCandle.name = "Stage Central Candle";
+                    existingCandle = createdCandle;
+                }
             }
 
             if (existingCandle == null)
             {
                 Debug.LogError(
-                    $"[{nameof(StageLightingBootstrap)}] Assign an authored Candle Prefab. " +
-                    "Runtime candle geometry is no longer generated.",
+                    $"[{nameof(StageLightingBootstrap)}] Assign an authored central candle " +
+                    "or a legacy Candle Prefab.",
+                    this);
+                return;
+            }
+
+            if (isAuthoredCandle && existingCandle.scene != gameObject.scene)
+            {
+                Debug.LogError(
+                    $"[{nameof(StageLightingBootstrap)}] Central Candle must be a scene object, " +
+                    "not a prefab asset.",
                     this);
                 return;
             }
@@ -226,10 +253,19 @@ namespace Game.Lighting
             candleEmitter = existingCandle.GetComponent<LightEmitter2D>();
             if (candleEmitter == null)
             {
+                if (isAuthoredCandle)
+                {
+                    Debug.LogError(
+                        $"[{nameof(StageLightingBootstrap)}] The authored Central Candle " +
+                        "must contain a LightEmitter2D component.",
+                        existingCandle);
+                    return;
+                }
+
                 candleEmitter = existingCandle.AddComponent<LightEmitter2D>();
             }
 
-            candleEmitter.Shape = LightShape2D.Sector;
+            candleEmitter.Shape = initialShape;
             candleEmitter.BaseRadius = baseRadius;
             candleEmitter.MinimumSectorAngle = minimumSectorAngle;
             candleEmitter.SectorAngle = sectorAngle;
@@ -243,20 +279,45 @@ namespace Game.Lighting
             InnerCircleLight2D innerCircle = existingCandle.GetComponent<InnerCircleLight2D>();
             if (innerCircle == null)
             {
+                if (isAuthoredCandle)
+                {
+                    Debug.LogError(
+                        $"[{nameof(StageLightingBootstrap)}] The authored Central Candle " +
+                        "must contain an InnerCircleLight2D component.",
+                        existingCandle);
+                    return;
+                }
+
                 innerCircle = existingCandle.AddComponent<InnerCircleLight2D>();
             }
 
             innerCircle.RadiusMultiplier = innerRadiusMultiplier;
 
-            CandleFocusController focusController = existingCandle.GetComponent<CandleFocusController>();
+            CandleFocusController focusController =
+                existingCandle.GetComponent<CandleFocusController>();
             if (focusController == null)
             {
+                if (isAuthoredCandle)
+                {
+                    Debug.LogError(
+                        $"[{nameof(StageLightingBootstrap)}] The authored Central Candle " +
+                        "must contain a CandleFocusController component.",
+                        existingCandle);
+                    return;
+                }
+
                 focusController = existingCandle.AddComponent<CandleFocusController>();
             }
 
             focusController.Initialize(targetCamera, candleEmitter);
+            usesAuthoredCandle = isAuthoredCandle;
             CaptureCandleScale(existingCandle.transform);
             RefreshCandleScale();
+
+            if (!isAuthoredCandle)
+            {
+                CreateCandleVisual(candleEmitter.transform);
+            }
         }
 
         private void CaptureCandleScale(Transform candleTransform)
@@ -291,7 +352,7 @@ namespace Game.Lighting
 
         public void RefreshCandleVisual()
         {
-            if (candleEmitter != null)
+            if (candleEmitter != null && !usesAuthoredCandle)
             {
                 CreateCandleVisual(candleEmitter.transform);
             }

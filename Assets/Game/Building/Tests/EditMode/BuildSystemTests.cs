@@ -189,6 +189,48 @@ namespace Game.Building.Tests
         }
 
         [Test]
+        public void PlacementCamera_ScrollRoundTripReturnsToInitialFieldOfView()
+        {
+            GameObject cameraObject = CreateObject("Round Trip Camera");
+            GameObject lightObject = CreateObject("Round Trip Light");
+            GameObject controllerObject = CreateObject("Round Trip Controller");
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.aspect = 16f / 9f;
+            camera.fieldOfView = 80f;
+            camera.transform.SetPositionAndRotation(
+                new Vector3(0f, -6.38f, -7f),
+                Quaternion.Euler(-30f, 0f, 0f));
+            LightEmitter2D emitter = lightObject.AddComponent<LightEmitter2D>();
+            emitter.BaseRadius = 100f;
+            CandleFocusController focus = lightObject.AddComponent<CandleFocusController>();
+            focus.Initialize(camera, emitter);
+            BuildPlacementCameraController controller =
+                controllerObject.AddComponent<BuildPlacementCameraController>();
+            controller.SetReferences(camera, emitter, focus, null, 0f);
+            controller.SetZoomConfigurationForTests(25f, 60f, 5f, 8f, 55f);
+            Vector3 initialPosition = camera.transform.position;
+            Quaternion initialRotation = camera.transform.rotation;
+
+            Assert.That(controller.BeginPlacement(), Is.True);
+            for (int i = 0; i < 5; i++)
+            {
+                controller.ApplyZoomDeltaForTests(1f);
+                controller.ApplyZoomDeltaForTests(-1f);
+            }
+
+            Assert.That(camera.fieldOfView, Is.EqualTo(80f).Within(0.0001f));
+            Assert.That(camera.transform.position, Is.EqualTo(initialPosition));
+            Assert.That(camera.transform.rotation, Is.EqualTo(initialRotation));
+
+            controller.EndPlacement();
+
+            Assert.That(camera.fieldOfView, Is.EqualTo(80f).Within(0.0001f));
+            Assert.That(camera.transform.position, Is.EqualTo(initialPosition));
+            Assert.That(camera.transform.rotation, Is.EqualTo(initialRotation));
+            Assert.That(focus.IsAimLocked, Is.False);
+        }
+
+        [Test]
         public void PlacementCamera_EndWhileIdlePreservesManualAimLock()
         {
             GameObject cameraObject = CreateObject("Idle Placement Camera");

@@ -9,6 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7400000000000002}
+  - component: {fileID: 7400000000000006}
+  - component: {fileID: 7400000000000007}
+  - component: {fileID: 7400000000000008}
   m_Layer: 0
   m_Name: StageCandle
   m_TagString: Untagged
@@ -116,3 +119,59 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &7400000000000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7400000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df879b6de7bed284ebe9ab7b54f44925, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  shape: 0
+  baseRadius: 4
+  sectorAngle: 90
+  minimumSectorAngle: 60
+  direction: {x: 1, y: 0}
+  baseIntensity: 1
+  baseDamagePerSecond: 10
+  maximumFocusMultiplier: 2.25
+  edgeSoftness: 0.35
+  emitting: 1
+  gizmoColor: {r: 1, g: 0.72, b: 0.2, a: 0.9}
+--- !u!114 &7400000000000007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7400000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4671910bf215d5447aaa93586dfbe3fe, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  sourceEmitter: {fileID: 7400000000000006}
+  radiusMultiplier: 0.5
+--- !u!114 &7400000000000008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7400000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19ccb1d295e1e834080f49b20dfe3c70, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  targetCamera: {fileID: 0}
+  controlledEmitter: {fileID: 7400000000000006}
+  gameplayPlaneZ: 0
+  aimLockKey: 102
+  sectorAngleStep: 10
+  allowShapeToggle: 1
+  allowSectorAngleInput: 1

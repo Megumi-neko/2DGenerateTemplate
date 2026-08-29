@@ -26,7 +26,7 @@ namespace Game.Building
         [SerializeField] private StageLightingCameraFramer cameraFramer;
         [SerializeField] private float gameplayPlaneZ;
         [SerializeField, Range(1f, 89f)] private float minimumBuildFieldOfView = 25f;
-        [SerializeField, Range(1f, 179f)] private float maximumBuildFieldOfView = 80f;
+        [SerializeField, Range(1f, 179f)] private float maximumBuildFieldOfView = 90f;
         [SerializeField, Min(0.1f)] private float zoomStep = 5f;
         [SerializeField, Min(0f)] private float movementSpeed = 8f;
         [SerializeField, Range(1f, 179f)] private float movementFieldOfViewThreshold = 55f;
@@ -40,6 +40,9 @@ namespace Game.Building
         private bool savedFramerManualMode;
         private bool hasSavedCameraState;
         private bool isPlacing;
+        private float placementMinimumFieldOfView;
+        private float placementMaximumFieldOfView;
+        private bool hasPlacementFieldOfViewBounds;
 
         public Camera TargetCamera => targetCamera;
         public LightEmitter2D BuildLight => buildLight;
@@ -62,6 +65,7 @@ namespace Game.Building
             if (!isPlacing)
             {
                 SaveCameraState();
+                ConfigurePlacementFieldOfViewBounds();
                 savedFramerManualMode = cameraFramer != null && cameraFramer.IsManualMode;
                 isPlacing = true;
             }
@@ -94,11 +98,13 @@ namespace Game.Building
         {
             if (!isPlacing && !hasSavedCameraState)
             {
+                ClearPlacementFieldOfViewBounds();
                 return;
             }
 
             isPlacing = false;
             RestoreCameraState();
+            ClearPlacementFieldOfViewBounds();
             if (cameraFramer != null)
             {
                 cameraFramer.SetManualMode(savedFramerManualMode);
@@ -176,19 +182,35 @@ namespace Game.Building
 
         private void UpdateZoom()
         {
-            float scroll = Input.mouseScrollDelta.y;
-            if (Mathf.Abs(scroll) <= BoundaryEpsilon || targetCamera.orthographic)
+            ApplyZoomDelta(Input.mouseScrollDelta.y);
+        }
+
+        internal void ApplyZoomDeltaForTests(float scroll)
+        {
+            ApplyZoomDelta(scroll);
+        }
+
+        private void ApplyZoomDelta(float scroll)
+        {
+            if (Mathf.Abs(scroll) <= BoundaryEpsilon ||
+                targetCamera == null || targetCamera.orthographic)
             {
                 return;
             }
 
+            float minimumFov = hasPlacementFieldOfViewBounds
+                ? placementMinimumFieldOfView
+                : minimumBuildFieldOfView;
+            float maximumFov = hasPlacementFieldOfViewBounds
+                ? placementMaximumFieldOfView
+                : maximumBuildFieldOfView;
             bool wasInsideBoundary = IsCameraViewInsideBoundary(
                 targetCamera.transform.position);
             float previousFieldOfView = targetCamera.fieldOfView;
             targetCamera.fieldOfView = Mathf.Clamp(
                 previousFieldOfView - scroll * zoomStep,
-                minimumBuildFieldOfView,
-                maximumBuildFieldOfView);
+                minimumFov,
+                maximumFov);
             if (wasInsideBoundary &&
                 !IsCameraViewInsideBoundary(targetCamera.transform.position))
             {
@@ -330,6 +352,24 @@ namespace Game.Building
             Vector3 worldPoint = ray.GetPoint(distance);
             point = new Vector2(worldPoint.x, worldPoint.y);
             return true;
+        }
+
+        private void ConfigurePlacementFieldOfViewBounds()
+        {
+            placementMinimumFieldOfView = Mathf.Min(
+                minimumBuildFieldOfView,
+                savedFieldOfView);
+            placementMaximumFieldOfView = Mathf.Max(
+                maximumBuildFieldOfView,
+                savedFieldOfView);
+            hasPlacementFieldOfViewBounds = true;
+        }
+
+        private void ClearPlacementFieldOfViewBounds()
+        {
+            placementMinimumFieldOfView = 0f;
+            placementMaximumFieldOfView = 0f;
+            hasPlacementFieldOfViewBounds = false;
         }
 
         private void SaveCameraState()

@@ -199,11 +199,64 @@ namespace Game.Lighting.Tests
         }
 
         [Test]
+        public void StageLightingBootstrap_UsesAuthoredCandleAndConfiguresInitialCircleRadius()
+        {
+            GameObject bootstrapObject = new GameObject("Test Authored Stage Lighting");
+            createdObjects.Add(bootstrapObject);
+            StageLightingBootstrap bootstrap =
+                bootstrapObject.AddComponent<StageLightingBootstrap>();
+            GameObject candle = CreateAuthoredCandle(bootstrapObject.transform);
+            SetPrivateField(bootstrap, "centralCandle", candle);
+            SetPrivateField(bootstrap, "initialShape", LightShape2D.Circle);
+            SetPrivateField(bootstrap, "baseRadius", 7.5f);
+            SetPrivateField(bootstrap, "innerRadiusMultiplier", 0.4f);
+
+            InvokePrivateMethod(bootstrap, "EnsureCandle");
+
+            Assert.That(bootstrap.CandleEmitter.gameObject, Is.SameAs(candle));
+            Assert.That(bootstrap.CandleEmitter.Shape, Is.EqualTo(LightShape2D.Circle));
+            Assert.That(bootstrap.CandleEmitter.BaseRadius, Is.EqualTo(7.5f));
+            Assert.That(bootstrap.CandleEmitter.EffectiveRange, Is.EqualTo(7.5f));
+            Assert.That(bootstrap.InnerCircle.InnerRadius, Is.EqualTo(3f).Within(0.0001f));
+            Assert.That(candle.transform.Find("Visual"), Is.Not.Null);
+            Assert.That(
+                candle.transform.Find("Stage 1 Central Candle Visual"),
+                Is.Null);
+        }
+
+        [Test]
+        public void StageLightingBootstrap_DoesNotDuplicateAuthoredVisual()
+        {
+            GameObject bootstrapObject = new GameObject("Test Authored Candle Visual");
+            createdObjects.Add(bootstrapObject);
+            StageLightingBootstrap bootstrap =
+                bootstrapObject.AddComponent<StageLightingBootstrap>();
+            GameObject candle = CreateAuthoredCandle(bootstrapObject.transform);
+            Transform authoredVisual = candle.transform.Find("Visual");
+            SetPrivateField(bootstrap, "centralCandle", candle);
+            SetPrivateField(bootstrap, "candleSprite", Resources.Load<Sprite>(
+                "PowerTexture/09416f3344d521839bd708038ebc7229"));
+
+            InvokePrivateMethod(bootstrap, "EnsureCandle");
+            bootstrap.RefreshCandleVisual();
+
+            Assert.That(candle.transform.Find("Visual"), Is.SameAs(authoredVisual));
+            Assert.That(
+                candle.GetComponentsInChildren<SpriteRenderer>(true),
+                Has.Length.EqualTo(1));
+            Assert.That(
+                candle.transform.Find("Stage 1 Central Candle Visual"),
+                Is.Null);
+        }
+
+        [Test]
         public void StageLightingBootstrap_UpgradesRangeAndIntensityIndependently()
         {
             GameObject bootstrapObject = new GameObject("Test Stage Lighting Upgrades");
             createdObjects.Add(bootstrapObject);
             StageLightingBootstrap bootstrap = bootstrapObject.AddComponent<StageLightingBootstrap>();
+            GameObject candle = CreateAuthoredCandle(bootstrapObject.transform);
+            SetPrivateField(bootstrap, "centralCandle", candle);
             InvokePrivateMethod(bootstrap, "EnsureCandle");
 
             float initialRadius = bootstrap.CandleEmitter.BaseRadius;
@@ -229,6 +282,8 @@ namespace Game.Lighting.Tests
             GameObject bootstrapObject = new GameObject("Test Stage Lighting Upgrade Limits");
             createdObjects.Add(bootstrapObject);
             StageLightingBootstrap bootstrap = bootstrapObject.AddComponent<StageLightingBootstrap>();
+            GameObject candle = CreateAuthoredCandle(bootstrapObject.transform);
+            SetPrivateField(bootstrap, "centralCandle", candle);
             InvokePrivateMethod(bootstrap, "EnsureCandle");
 
             Assert.That(bootstrap.UpgradeRange(), Is.True);
@@ -437,15 +492,21 @@ namespace Game.Lighting.Tests
             GameObject bootstrapObject = new GameObject("Test Stage Lighting Bootstrap");
             createdObjects.Add(bootstrapObject);
             StageLightingBootstrap bootstrap = bootstrapObject.AddComponent<StageLightingBootstrap>();
+            GameObject candle = CreateAuthoredCandle(bootstrapObject.transform);
+            SetPrivateField(bootstrap, "centralCandle", candle);
             Sprite candleSprite = Resources.Load<Sprite>("PowerTexture/09416f3344d521839bd708038ebc7229");
 
             Assert.That(candleSprite, Is.Not.Null);
+            SpriteRenderer authoredRenderer = candle.transform.Find("Visual")
+                .GetComponent<SpriteRenderer>();
+            authoredRenderer.sprite = candleSprite;
+            authoredRenderer.sortingOrder = 10;
 
             SetPrivateField(bootstrap, "candleSprite", candleSprite);
             SetPrivateField(bootstrap, "flameSprite", null);
             InvokePrivateMethod(bootstrap, "EnsureCandle");
 
-            Transform visualRoot = bootstrap.CandleEmitter.transform.Find("Stage 1 Central Candle Visual");
+            Transform visualRoot = bootstrap.CandleEmitter.transform.Find("Visual");
             Assert.That(visualRoot, Is.Not.Null);
             Assert.That(visualRoot.parent, Is.SameAs(bootstrap.CandleEmitter.transform));
 
@@ -465,9 +526,15 @@ namespace Game.Lighting.Tests
             GameObject bootstrapObject = new GameObject("Test Stage Lighting Bootstrap");
             createdObjects.Add(bootstrapObject);
             StageLightingBootstrap bootstrap = bootstrapObject.AddComponent<StageLightingBootstrap>();
+            GameObject candle = CreateAuthoredCandle(bootstrapObject.transform);
+            SetPrivateField(bootstrap, "centralCandle", candle);
             Sprite candleSprite = Resources.Load<Sprite>("PowerTexture/09416f3344d521839bd708038ebc7229");
 
             Assert.That(candleSprite, Is.Not.Null);
+            SpriteRenderer authoredRenderer = candle.transform.Find("Visual")
+                .GetComponent<SpriteRenderer>();
+            authoredRenderer.sprite = candleSprite;
+            authoredRenderer.sortingOrder = 10;
 
             SetPrivateField(bootstrap, "candleSprite", candleSprite);
             SetPrivateField(bootstrap, "flameSprite", null);
@@ -476,7 +543,7 @@ namespace Game.Lighting.Tests
             bootstrap.RefreshCandleVisual();
 
             Transform secondVisualRoot = bootstrap.CandleEmitter.transform.Find(
-                "Stage 1 Central Candle Visual");
+                "Visual");
             SpriteRenderer[] spriteRenderers =
                 bootstrap.CandleEmitter.GetComponentsInChildren<SpriteRenderer>(true);
 
@@ -501,6 +568,20 @@ namespace Game.Lighting.Tests
                 BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.That(method, Is.Not.Null, $"Missing private method '{methodName}'.");
             method.Invoke(target, null);
+        }
+
+        private GameObject CreateAuthoredCandle(Transform parent)
+        {
+            GameObject candle = new GameObject("Stage Central Candle");
+            candle.transform.SetParent(parent, false);
+            candle.AddComponent<LightEmitter2D>();
+            candle.AddComponent<InnerCircleLight2D>();
+            candle.AddComponent<CandleFocusController>();
+
+            GameObject visual = new GameObject("Visual");
+            visual.transform.SetParent(candle.transform, false);
+            visual.AddComponent<SpriteRenderer>();
+            return candle;
         }
 
         private LightEmitter2D CreateEmitter(
