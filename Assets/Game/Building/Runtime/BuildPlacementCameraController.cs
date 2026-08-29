@@ -31,6 +31,8 @@ namespace Game.Building
         [SerializeField, Min(0f)] private float movementSpeed = 8f;
         [SerializeField, Range(1f, 179f)] private float movementFieldOfViewThreshold = 55f;
         [SerializeField, Min(0f)] private float boundaryPadding = 0.1f;
+        [Tooltip("When disabled, placement camera zoom and movement are not constrained by the build light circle.")]
+        [SerializeField] private bool useLightBoundary = true;
 
         private Vector3 savedPosition;
         private Quaternion savedRotation;
@@ -154,6 +156,11 @@ namespace Game.Building
 
         internal bool IsCameraViewInsideBoundary(Vector3 position)
         {
+            if (!useLightBoundary)
+            {
+                return true;
+            }
+
             if (buildLight == null || targetCamera == null)
             {
                 return false;
