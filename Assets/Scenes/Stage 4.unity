@@ -176257,6 +176257,7 @@ MonoBehaviour:
   movementSpeed: 8
   movementFieldOfViewThreshold: 55
   boundaryPadding: 0.1
+  useLightBoundary: 0
 --- !u!1 &8800002001
 GameObject:
   m_ObjectHideFlags: 0
