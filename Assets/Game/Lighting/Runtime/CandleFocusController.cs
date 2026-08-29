@@ -40,7 +40,7 @@ namespace Game.Lighting
             }
         }
 
-        private void Update()
+private void Update()
         {
             if (targetCamera == null)
             {
@@ -65,7 +65,13 @@ namespace Game.Lighting
 
             if (allowSectorAngleInput)
             {
-                ApplySectorAngleInput(Input.mouseScrollDelta.y);
+                float scroll = Input.mouseScrollDelta.y;
+                if (Mathf.Abs(scroll) <= GameplayPlaneEpsilon)
+                {
+                    scroll = Input.GetAxisRaw("Mouse ScrollWheel");
+                }
+
+                ApplySectorAngleInput(scroll);
             }
 
             hasPointerWorldPosition = TryGetPointerWorldPosition(out pointerWorldPosition);
