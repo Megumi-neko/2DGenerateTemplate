@@ -1680,8 +1680,11 @@ MonoBehaviour:
   constructButton: {fileID: 365588733}
   settingsCloseButton: {fileID: 830539780}
   constructCloseButton: {fileID: 1088489539}
+  backToMainMenuButton: {fileID: 0}
+  exitButton: {fileID: 0}
   settingsPanel: {fileID: 1771203367}
   constructPanel: {fileID: 1125754944}
+  mainMenuSceneName: MainMenu
 --- !u!1001 &541284107
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -58822,6 +58825,45 @@ Transform:
   - {fileID: 1146664608}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1388045010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1388045006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cc9924270fbd5143847e23e5ff4189d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetCamera: {fileID: 1848669775}
+  gameplayPlaneZ: 0
+  darknessOpacity: 1
+  candleWorldPosition: {x: 0, y: 0}
+  candleWorldZ: -0.15
+  baseRadius: 5
+  sectorAngle: 90
+  minimumSectorAngle: 36
+  baseIntensity: 1
+  baseDamagePerSecond: 12
+  maximumFocusMultiplier: 2.25
+  edgeSoftness: 0.35
+  innerRadiusMultiplier: 0.5
+  maximumRangeUpgradeLevel: 10
+  rangeUpgradeAmount: 1
+  maximumIntensityUpgradeLevel: 3
+  intensityUpgradeAmount: 0.25
+  damageUpgradeAmount: 3
+  rangeUpgradeKey: 49
+  intensityUpgradeKey: 50
+  candleVisualPrefab: {fileID: 0}
+  candleSprite: {fileID: 21300000, guid: 864c4e01f8c1f3a4c808c7a2a91c80b5, type: 3}
+  flameSprite: {fileID: 0}
+  candleVisualLocalPosition: {x: 0, y: 0.73, z: -0.06}
+  candleVisualLocalEulerAngles: {x: 0, y: 0, z: 0}
+  candleVisualLocalScale: {x: 0.15, y: 0.15, z: 0.15}
+  visualSortingOrder: 10
 --- !u!1001 &1435565953
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -60084,8 +60126,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2c97c6bad4bbec04ab12144051372cd8, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   darknessShader: {fileID: 4800000, guid: dea08432c9dd8af44873aa665f7c2b51, type: 3}
   darknessColor: {r: 0.01, g: 0.015, b: 0.025, a: 1}
   darknessOpacity: 0.96
@@ -60102,8 +60144,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4cb0d7ba9e4c4ec6b3d8c1d08f146c37, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   screenPadding: 0.1
   framingCenterBias: 0.12
   boundaryPadding: 0.2
@@ -61070,45 +61112,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2011385082727285623, guid: c8da5ab0fcf00ef4391ffd031a011047, type: 3}
   m_PrefabInstance: {fileID: 2075115604}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1388045010
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1388045006}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9cc9924270fbd5143847e23e5ff4189d, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  targetCamera: {fileID: 1848669775}
-  gameplayPlaneZ: 0
-  darknessOpacity: 0.96
-  candleWorldPosition: {x: 0, y: 0}
-  candleWorldZ: -0.15
-  baseRadius: 5
-  sectorAngle: 90
-  minimumSectorAngle: 36
-  baseIntensity: 1
-  baseDamagePerSecond: 12
-  maximumFocusMultiplier: 2.25
-  edgeSoftness: 0.35
-  innerRadiusMultiplier: 0.5
-  maximumRangeUpgradeLevel: 3
-  rangeUpgradeAmount: 1
-  maximumIntensityUpgradeLevel: 3
-  intensityUpgradeAmount: 0.25
-  damageUpgradeAmount: 3
-  rangeUpgradeKey: 49
-  intensityUpgradeKey: 50
-  candleVisualPrefab: {fileID: 0}
-  candleSprite: {fileID: 21300000, guid: 864c4e01f8c1f3a4c808c7a2a91c80b5, type: 3}
-  flameSprite: {fileID: 0}
-  candleVisualLocalPosition: {x: 0, y: 0.73, z: -0.06}
-  candleVisualLocalEulerAngles: {x: 0, y: 0, z: 0}
-  candleVisualLocalScale: {x: 0.15, y: 0.15, z: 0.15}
-  visualSortingOrder: 10
 --- !u!1 &2100000001
 GameObject:
   m_ObjectHideFlags: 0
@@ -61195,6 +61198,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -61208,10 +61212,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 556677889900aabbccddeeff11223344, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   grid: {fileID: 1388045007}
   buildableTilemap: {fileID: 1146664610}
+  buildBounds:
+    m_Position: {x: 0, y: 0, z: 0}
+    m_Size: {x: 0, y: 0, z: 0}
 --- !u!114 &3100000004
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61222,8 +61229,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 44556677889900aabbccddeeff112233, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   initialCoins: 20
 --- !u!114 &3100000005
 MonoBehaviour:
@@ -61235,8 +61242,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 77889900aabbccddeeff112233445566, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   buildGrid: {fileID: 3100000003}
   dayNightSystem: {fileID: 2100000003}
   coinInventory: {fileID: 3100000004}
@@ -61253,40 +61260,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 889900aabbccddeeff11223344556677, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
---- !u!114 &3100000009
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3100000001}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee00112233445566778899aabbccddee, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  buildGrid: {fileID: 3100000003}
-  buildSystem: {fileID: 3100000005}
-  gridTilemap: {fileID: 0}
-  outlineTile: {fileID: 0}
-  hideOccupiedCells: 1
---- !u!114 &3100000008
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3100000001}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ddee00112233445566778899aabbccdd, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  buildGrid: {fileID: 3100000003}
-  previewTilemap: {fileID: 0}
-  previewTile: {fileID: 0}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &3100000007
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61297,8 +61272,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9900aabbccddeeff1122334455667788, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   buildSystem: {fileID: 3100000005}
   buildPreview: {fileID: 3100000006}
   areaGridPreview: {fileID: 3100000009}
@@ -61307,6 +61282,38 @@ MonoBehaviour:
   targetCamera: {fileID: 1848669775}
   placementCameraController: {fileID: 3100000010}
   stageUIController: {fileID: 452546530}
+--- !u!114 &3100000008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddee00112233445566778899aabbccdd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buildGrid: {fileID: 3100000003}
+  previewTilemap: {fileID: 0}
+  previewTile: {fileID: 0}
+--- !u!114 &3100000009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee00112233445566778899aabbccddee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buildGrid: {fileID: 3100000003}
+  buildSystem: {fileID: 3100000005}
+  gridTilemap: {fileID: 0}
+  outlineTile: {fileID: 0}
+  hideOccupiedCells: 1
 --- !u!114 &3100000010
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61317,8 +61324,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4f9e4d58ad3e4f90b77c2f6e8a9d1c04, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   targetCamera: {fileID: 1848669775}
   buildLight: {fileID: 0}
   candleFocusController: {fileID: 0}

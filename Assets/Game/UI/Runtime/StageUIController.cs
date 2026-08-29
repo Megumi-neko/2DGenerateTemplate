@@ -2,6 +2,7 @@ using System;
 using Game.BaseSystem;
 using Game.Building;
 using Game.DayNight;
+using Game.Lighting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -46,11 +47,21 @@ namespace Game.UI
 
         private int coinCount;
         private bool eventsSubscribed;
+        private bool isBuildMode;
+        private bool buildModeStateCaptured;
+        private bool savedSunMoonInteractable;
+        private bool savedSettingsInteractable;
+        private bool savedConstructInteractable;
+        private bool savedSettingsCloseInteractable;
+        private bool savedConstructCloseInteractable;
+        private bool savedBackToMainMenuInteractable;
+        private bool savedExitInteractable;
 
         public int CoinCount => coinCount;
         public GameObject ConstructPanel => constructPanel;
         public bool IsSettingsOpen => settingsPanel != null && settingsPanel.activeSelf;
         public bool IsConstructOpen => constructPanel != null && constructPanel.activeSelf;
+        public bool IsBuildMode => isBuildMode;
 
         public event Action<int> CoinCountChanged;
         public event Action<bool> SettingsVisibilityChanged;
@@ -68,6 +79,7 @@ namespace Game.UI
                 : coinInventory.Coins;
             ResolveSettingsButtons();
             ConfigureButtonListeners();
+            EnsureDayNightLightingController();
             CloseSettings();
             CloseConstruct();
             RefreshCoinCount(coinCount);
@@ -124,6 +136,84 @@ namespace Game.UI
             dayNightSystem.EndDay();
         }
 
+        public void SetBuildMode(bool enabled)
+        {
+            if (enabled == isBuildMode)
+            {
+                return;
+            }
+
+            if (enabled)
+            {
+                CaptureBuildModeState();
+                isBuildMode = true;
+                SetInteractable(sunMoonButton, false);
+                SetInteractable(settingsButton, false);
+                SetInteractable(constructButton, false);
+                SetInteractable(settingsCloseButton, false);
+                SetInteractable(constructCloseButton, false);
+                SetInteractable(backToMainMenuButton, false);
+                SetInteractable(exitButton, false);
+                CloseSettings();
+                CloseConstruct();
+                return;
+            }
+
+            isBuildMode = false;
+            RestoreBuildModeState();
+            if (dayNightSystem != null)
+            {
+                RefreshDayNight(dayNightSystem.CurrentPhase, dayNightSystem.CurrentDay);
+            }
+        }
+
+        private void CaptureBuildModeState()
+        {
+            if (buildModeStateCaptured)
+            {
+                return;
+            }
+
+            savedSunMoonInteractable = GetInteractable(sunMoonButton);
+            savedSettingsInteractable = GetInteractable(settingsButton);
+            savedConstructInteractable = GetInteractable(constructButton);
+            savedSettingsCloseInteractable = GetInteractable(settingsCloseButton);
+            savedConstructCloseInteractable = GetInteractable(constructCloseButton);
+            savedBackToMainMenuInteractable = GetInteractable(backToMainMenuButton);
+            savedExitInteractable = GetInteractable(exitButton);
+            buildModeStateCaptured = true;
+        }
+
+        private void RestoreBuildModeState()
+        {
+            if (!buildModeStateCaptured)
+            {
+                return;
+            }
+
+            SetInteractable(sunMoonButton, savedSunMoonInteractable);
+            SetInteractable(settingsButton, savedSettingsInteractable);
+            SetInteractable(constructButton, savedConstructInteractable);
+            SetInteractable(settingsCloseButton, savedSettingsCloseInteractable);
+            SetInteractable(constructCloseButton, savedConstructCloseInteractable);
+            SetInteractable(backToMainMenuButton, savedBackToMainMenuInteractable);
+            SetInteractable(exitButton, savedExitInteractable);
+            buildModeStateCaptured = false;
+        }
+
+        private static bool GetInteractable(Button button)
+        {
+            return button != null && button.interactable;
+        }
+
+        private static void SetInteractable(Button button, bool interactable)
+        {
+            if (button != null)
+            {
+                button.interactable = interactable;
+            }
+        }
+
         public void SetCoinCount(int count)
         {
             if (coinInventory != null)
@@ -148,6 +238,11 @@ namespace Game.UI
 
         public void OpenSettings()
         {
+            if (isBuildMode)
+            {
+                return;
+            }
+
             SetPanelVisibility(settingsPanel, true);
             SetPanelVisibility(constructPanel, false);
             SettingsVisibilityChanged?.Invoke(true);
@@ -165,6 +260,11 @@ namespace Game.UI
 
         public void ToggleSettings()
         {
+            if (isBuildMode)
+            {
+                return;
+            }
+
             if (IsSettingsOpen)
             {
                 CloseSettings();
@@ -177,6 +277,11 @@ namespace Game.UI
 
         public void OpenConstruct()
         {
+            if (isBuildMode)
+            {
+                return;
+            }
+
             SetPanelVisibility(constructPanel, true);
             SetPanelVisibility(settingsPanel, false);
             ConstructVisibilityChanged?.Invoke(true);
@@ -194,6 +299,11 @@ namespace Game.UI
 
         public void ToggleConstruct()
         {
+            if (isBuildMode)
+            {
+                return;
+            }
+
             if (IsConstructOpen)
             {
                 CloseConstruct();
@@ -266,11 +376,28 @@ namespace Game.UI
 
             if (constructButton != null)
             {
+                bool wasConstructOpen = IsConstructOpen;
                 constructButton.interactable = isDay;
-                if (!isDay && IsConstructOpen)
+                constructButton.gameObject.SetActive(isDay);
+                if (!isDay && wasConstructOpen)
                 {
                     CloseConstruct();
                 }
+            }
+        }
+
+        private void EnsureDayNightLightingController()
+        {
+            StageLightingBootstrap bootstrap = FindObjectOfType<StageLightingBootstrap>();
+            if (bootstrap == null)
+            {
+                bootstrap = gameObject.AddComponent<StageLightingBootstrap>();
+            }
+
+            DayNightLightingController controller = GetComponent<DayNightLightingController>();
+            if (controller == null)
+            {
+                gameObject.AddComponent<DayNightLightingController>();
             }
         }
 

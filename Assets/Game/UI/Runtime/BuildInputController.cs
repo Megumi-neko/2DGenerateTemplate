@@ -48,10 +48,8 @@ namespace Game.UI
                 return;
             }
 
-            if (skipPointerClick)
-            {
-                skipPointerClick = false;
-            }
+            bool ignorePointerClick = skipPointerClick;
+            skipPointerClick = false;
 
             placementCameraController?.UpdatePlacement();
 
@@ -90,7 +88,7 @@ namespace Game.UI
                     result);
             }
 
-            if (!skipPointerClick &&
+            if (!ignorePointerClick &&
                 Input.GetMouseButtonDown(0) &&
                 !IsPointerOverUi() &&
                 result.IsValid)
@@ -107,6 +105,10 @@ namespace Game.UI
             ResolveReferences();
             if (buildSystem == null || lookoutTower == null || buildPreview == null)
             {
+                Debug.LogWarning(
+                    $"[{nameof(BuildInputController)}] Cannot start building: " +
+                    "required references are missing.",
+                    this);
                 return;
             }
 
@@ -134,7 +136,7 @@ namespace Game.UI
 
             if (stageUIController != null)
             {
-                stageUIController.CloseConstruct();
+                stageUIController.SetBuildMode(true);
             }
         }
 
@@ -157,6 +159,7 @@ namespace Game.UI
                 areaGridPreview.Hide();
             }
 
+            stageUIController?.SetBuildMode(false);
             placementCameraController?.EndPlacement();
         }
 

@@ -81,6 +81,48 @@ namespace Game.Lighting
                     strongestSource);
         }
 
+        public static float GetLongestSectorRange()
+        {
+            LightEmitter2D emitter = GetLongestSectorEmitter();
+            return emitter == null ? 0f : emitter.MaximumEffectiveRange;
+        }
+
+        public static LightEmitter2D GetLongestSectorEmitter()
+        {
+            return GetLongestSectorEmitter(false);
+        }
+
+        public static LightEmitter2D GetLongestSectorEmitter(bool includeNonOperational)
+        {
+            LightEmitter2D longestEmitter = null;
+            float longestRange = 0f;
+            for (int i = EmittersInternal.Count - 1; i >= 0; i--)
+            {
+                LightEmitter2D emitter = EmittersInternal[i];
+                if (emitter == null)
+                {
+                    EmittersInternal.RemoveAt(i);
+                    continue;
+                }
+
+                if ((!includeNonOperational && !emitter.IsOperational) ||
+                    (includeNonOperational && !emitter.isActiveAndEnabled) ||
+                    emitter.Shape != LightShape2D.Sector)
+                {
+                    continue;
+                }
+
+                float range = emitter.MaximumEffectiveRange;
+                if (range > longestRange)
+                {
+                    longestRange = range;
+                    longestEmitter = emitter;
+                }
+            }
+
+            return longestEmitter;
+        }
+
         public static bool IsLit(Vector2 worldPosition)
         {
             return Sample(worldPosition).IsLit;

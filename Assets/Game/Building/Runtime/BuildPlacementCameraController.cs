@@ -87,11 +87,7 @@ namespace Game.Building
             }
 
             UpdateZoom();
-            if (targetCamera.fieldOfView <= movementFieldOfViewThreshold &&
-                !IsMaximumLightRangeFullyVisible())
-            {
-                UpdateMovement();
-            }
+            UpdateMovement();
         }
 
         public void EndPlacement()

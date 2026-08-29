@@ -172,7 +172,9 @@ namespace Game.Building
             if (buildLight == null)
             {
                 StageLightingBootstrap bootstrap = FindObjectOfType<StageLightingBootstrap>();
-                buildLight = bootstrap == null ? null : bootstrap.CandleEmitter;
+                buildLight = bootstrap == null
+                    ? IlluminationSystem.GetLongestSectorEmitter(true)
+                    : bootstrap.CandleEmitter ?? IlluminationSystem.GetLongestSectorEmitter(true);
             }
         }
 
