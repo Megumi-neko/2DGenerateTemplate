@@ -1,7 +1,9 @@
 {
   "name": "Game.Lighting",
   "rootNamespace": "Game.Lighting",
-  "references": [],
+  "references": [
+    "Game.DayNight"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
