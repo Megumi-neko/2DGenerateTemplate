@@ -57613,6 +57613,13 @@ MonoBehaviour:
   maximumFocusMultiplier: 2.25
   edgeSoftness: 0.35
   innerRadiusMultiplier: 0.5
+  maximumRangeUpgradeLevel: 3
+  rangeUpgradeAmount: 1
+  maximumIntensityUpgradeLevel: 3
+  intensityUpgradeAmount: 0.25
+  damageUpgradeAmount: 3
+  rangeUpgradeKey: 49
+  intensityUpgradeKey: 50
   candleVisualPrefab: {fileID: 0}
   candleSprite: {fileID: 21300000, guid: 864c4e01f8c1f3a4c808c7a2a91c80b5, type: 3}
   flameSprite: {fileID: 0}
@@ -58510,6 +58517,7 @@ GameObject:
   - component: {fileID: 1848669775}
   - component: {fileID: 1848669774}
   - component: {fileID: 1848669777}
+  - component: {fileID: 1848669778}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -58609,6 +58617,28 @@ MonoBehaviour:
   gameplayPlaneZ: 0
   maximumVisibleLights: 32
   warnWhenLightLimitExceeded: 1
+--- !u!114 &1848669778
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848669773}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cb0d7ba9e4c4ec6b3d8c1d08f146c37, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  screenPadding: 0.1
+  framingCenterBias: 0.12
+  boundaryPadding: 0.2
+  smoothTime: 0.2
+  targetChangeThreshold: 0.05
+  boundarySegments: 32
+  maximumFramingOffset: 6
+  maximumCameraRise: 1.5
+  maximumCameraBackstep: 80
+  enforceSafeViewportDuringMotion: 1
 --- !u!1001 &1889720775
 PrefabInstance:
   m_ObjectHideFlags: 0

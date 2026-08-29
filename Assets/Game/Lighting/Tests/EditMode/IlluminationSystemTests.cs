@@ -163,6 +163,239 @@ namespace Game.Lighting.Tests
         }
 
         [Test]
+        public void StageLightingBootstrap_UpgradesRangeAndIntensityIndependently()
+        {
+            GameObject bootstrapObject = new GameObject("Test Stage Lighting Upgrades");
+            createdObjects.Add(bootstrapObject);
+            StageLightingBootstrap bootstrap = bootstrapObject.AddComponent<StageLightingBootstrap>();
+            InvokePrivateMethod(bootstrap, "EnsureCandle");
+
+            float initialRadius = bootstrap.CandleEmitter.BaseRadius;
+            float initialIntensity = bootstrap.CandleEmitter.BaseIntensity;
+            float initialDamage = bootstrap.CandleEmitter.BaseDamagePerSecond;
+
+            Assert.That(bootstrap.UpgradeRange(), Is.True);
+            Assert.That(bootstrap.CandleEmitter.BaseRadius, Is.EqualTo(initialRadius + 1f));
+            Assert.That(bootstrap.CandleEmitter.BaseIntensity, Is.EqualTo(initialIntensity));
+            Assert.That(bootstrap.CandleEmitter.BaseDamagePerSecond, Is.EqualTo(initialDamage));
+            Assert.That(bootstrap.RangeUpgradeLevel, Is.EqualTo(1));
+            Assert.That(bootstrap.IntensityUpgradeLevel, Is.Zero);
+
+            Assert.That(bootstrap.UpgradeIntensity(), Is.True);
+            Assert.That(bootstrap.CandleEmitter.BaseIntensity, Is.EqualTo(initialIntensity + 0.25f));
+            Assert.That(bootstrap.CandleEmitter.BaseDamagePerSecond, Is.EqualTo(initialDamage + 3f));
+            Assert.That(bootstrap.IntensityUpgradeLevel, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void StageLightingBootstrap_StopsUpgradesAtConfiguredMaximum()
+        {
+            GameObject bootstrapObject = new GameObject("Test Stage Lighting Upgrade Limits");
+            createdObjects.Add(bootstrapObject);
+            StageLightingBootstrap bootstrap = bootstrapObject.AddComponent<StageLightingBootstrap>();
+            InvokePrivateMethod(bootstrap, "EnsureCandle");
+
+            Assert.That(bootstrap.UpgradeRange(), Is.True);
+            Assert.That(bootstrap.UpgradeRange(), Is.True);
+            Assert.That(bootstrap.UpgradeRange(), Is.True);
+            float radiusAtLimit = bootstrap.CandleEmitter.BaseRadius;
+
+            Assert.That(bootstrap.UpgradeRange(), Is.False);
+            Assert.That(bootstrap.CandleEmitter.BaseRadius, Is.EqualTo(radiusAtLimit));
+            Assert.That(bootstrap.RangeUpgradeLevel, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void StageLightingCameraFramer_ExpandsTargetAfterRangeUpgrade()
+        {
+            GameObject cameraObject = new GameObject("Test Framing Camera");
+            GameObject emitterObject = new GameObject("Test Framing Emitter");
+            createdObjects.Add(cameraObject);
+            createdObjects.Add(emitterObject);
+
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.transform.SetPositionAndRotation(
+                new Vector3(0f, -6.38f, -7f),
+                Quaternion.Euler(-30f, 0f, 0f));
+            LightEmitter2D emitter = emitterObject.AddComponent<LightEmitter2D>();
+            emitter.BaseRadius = 4f;
+            emitter.Shape = LightShape2D.Sector;
+            emitter.MinimumSectorAngle = 60f;
+            emitter.SectorAngle = 90f;
+            emitter.Direction = Vector2.right;
+
+            StageLightingCameraFramer framer =
+                cameraObject.AddComponent<StageLightingCameraFramer>();
+            framer.Initialize(camera, emitter, 0f);
+            Vector3 initialTarget = framer.TargetPosition;
+
+            emitter.BaseRadius = 7f;
+            framer.ReframeImmediately();
+
+            Assert.That(framer.TargetPosition.z, Is.LessThan(initialTarget.z));
+        }
+
+        [Test]
+        public void StageLightingCameraFramer_UsesCurrentSectorDirection()
+        {
+            GameObject cameraObject = new GameObject("Test Direction Framing Camera");
+            GameObject emitterObject = new GameObject("Test Direction Framing Emitter");
+            createdObjects.Add(cameraObject);
+            createdObjects.Add(emitterObject);
+
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.transform.SetPositionAndRotation(
+                new Vector3(0f, -6.38f, -7f),
+                Quaternion.Euler(-30f, 0f, 0f));
+            LightEmitter2D emitter = emitterObject.AddComponent<LightEmitter2D>();
+            emitter.BaseRadius = 4f;
+            emitter.Shape = LightShape2D.Sector;
+            emitter.MinimumSectorAngle = 60f;
+            emitter.SectorAngle = 90f;
+            emitter.Direction = Vector2.right;
+
+            StageLightingCameraFramer framer =
+                cameraObject.AddComponent<StageLightingCameraFramer>();
+            framer.Initialize(camera, emitter, 0f);
+            float rightTargetX = framer.TargetPosition.x;
+
+            emitter.Direction = Vector2.left;
+            framer.ReframeImmediately();
+
+            Assert.That(framer.TargetPosition.x, Is.LessThan(rightTargetX));
+        }
+
+        [Test]
+        public void StageLightingCameraFramer_ContainsSectorAndInnerCircleAfterManyDownwardUpgrades()
+        {
+            GameObject cameraObject = new GameObject("Test High Upgrade Framing Camera");
+            GameObject emitterObject = new GameObject("Test High Upgrade Framing Emitter");
+            createdObjects.Add(cameraObject);
+            createdObjects.Add(emitterObject);
+
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.aspect = 16f / 9f;
+            camera.fieldOfView = 80f;
+            camera.transform.SetPositionAndRotation(
+                new Vector3(0f, -6.38f, -7f),
+                Quaternion.Euler(-30f, 0f, 0f));
+            LightEmitter2D emitter = emitterObject.AddComponent<LightEmitter2D>();
+            emitter.BaseRadius = 5f;
+            emitter.Shape = LightShape2D.Sector;
+            emitter.MinimumSectorAngle = 60f;
+            emitter.SectorAngle = 60f;
+            emitter.Direction = Vector2.down;
+            InnerCircleLight2D innerCircle = emitterObject.AddComponent<InnerCircleLight2D>();
+            innerCircle.RadiusMultiplier = 0.5f;
+            innerCircle.SynchronizeNow();
+
+            for (int i = 0; i < 6; i++)
+            {
+                emitter.BaseRadius += 1f;
+            }
+
+            StageLightingCameraFramer framer =
+                cameraObject.AddComponent<StageLightingCameraFramer>();
+            framer.Initialize(camera, emitter, 0f);
+            camera.transform.position = framer.TargetPosition;
+            camera.transform.rotation = Quaternion.Euler(-30f, 0f, 0f);
+
+            FieldInfo pointsField = typeof(StageLightingCameraFramer).GetField(
+                "boundaryPoints",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            List<Vector3> points = pointsField.GetValue(framer) as List<Vector3>;
+            Assert.That(points, Is.Not.Null);
+
+            foreach (Vector3 point in points)
+            {
+                Vector3 viewportPoint = camera.WorldToViewportPoint(point);
+                Assert.That(viewportPoint.z, Is.GreaterThan(0f));
+                Assert.That(viewportPoint.x, Is.InRange(
+                    framer.ScreenPadding - 0.001f,
+                    1f - framer.ScreenPadding + 0.001f));
+                Assert.That(viewportPoint.y, Is.InRange(
+                    framer.ScreenPadding - 0.001f,
+                    1f - framer.ScreenPadding + 0.001f));
+            }
+        }
+
+        [Test]
+        public void StageLightingCameraFramer_ContainsSectorAndInnerCircleInSafeViewport()
+        {
+            GameObject cameraObject = new GameObject("Test Combined Framing Camera");
+            GameObject emitterObject = new GameObject("Test Combined Framing Emitter");
+            createdObjects.Add(cameraObject);
+            createdObjects.Add(emitterObject);
+
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.aspect = 16f / 9f;
+            camera.transform.SetPositionAndRotation(
+                new Vector3(0f, -6.38f, -7f),
+                Quaternion.Euler(-30f, 0f, 0f));
+            LightEmitter2D emitter = emitterObject.AddComponent<LightEmitter2D>();
+            emitter.BaseRadius = 5f;
+            emitter.Shape = LightShape2D.Sector;
+            emitter.MinimumSectorAngle = 60f;
+            emitter.SectorAngle = 60f;
+            emitter.Direction = Vector2.right;
+            InnerCircleLight2D innerCircle = emitterObject.AddComponent<InnerCircleLight2D>();
+            innerCircle.RadiusMultiplier = 0.5f;
+            innerCircle.SynchronizeNow();
+
+            StageLightingCameraFramer framer =
+                cameraObject.AddComponent<StageLightingCameraFramer>();
+            framer.Initialize(camera, emitter, 0f);
+            camera.transform.position = framer.TargetPosition;
+            camera.transform.rotation = Quaternion.Euler(-30f, 0f, 0f);
+
+            FieldInfo pointsField = typeof(StageLightingCameraFramer).GetField(
+                "boundaryPoints",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            List<Vector3> points = pointsField.GetValue(framer) as List<Vector3>;
+            Assert.That(points, Is.Not.Null);
+            Assert.That(points.Count, Is.GreaterThan(36));
+
+            foreach (Vector3 point in points)
+            {
+                Vector3 viewportPoint = camera.WorldToViewportPoint(point);
+                Assert.That(viewportPoint.z, Is.GreaterThan(0f));
+                Assert.That(viewportPoint.x, Is.GreaterThanOrEqualTo(framer.ScreenPadding - 0.001f));
+                Assert.That(viewportPoint.x, Is.LessThanOrEqualTo(1f - framer.ScreenPadding + 0.001f));
+                Assert.That(viewportPoint.y, Is.GreaterThanOrEqualTo(framer.ScreenPadding - 0.001f));
+                Assert.That(viewportPoint.y, Is.LessThanOrEqualTo(1f - framer.ScreenPadding + 0.001f));
+            }
+        }
+
+        [Test]
+        public void StageLightingCameraFramer_RepeatedTargetCalculationDoesNotDrift()
+        {
+            GameObject cameraObject = new GameObject("Test Stable Framing Camera");
+            GameObject emitterObject = new GameObject("Test Stable Framing Emitter");
+            createdObjects.Add(cameraObject);
+            createdObjects.Add(emitterObject);
+
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.transform.SetPositionAndRotation(
+                new Vector3(0f, -6.38f, -7f),
+                Quaternion.Euler(-30f, 0f, 0f));
+            LightEmitter2D emitter = emitterObject.AddComponent<LightEmitter2D>();
+            emitter.Shape = LightShape2D.Sector;
+            emitter.SectorAngle = 60f;
+            emitter.MinimumSectorAngle = 60f;
+            emitter.Direction = Vector2.up;
+
+            StageLightingCameraFramer framer =
+                cameraObject.AddComponent<StageLightingCameraFramer>();
+            framer.Initialize(camera, emitter, 0f);
+            Vector3 firstTarget = framer.CalculateTargetPosition();
+            Vector3 secondTarget = framer.CalculateTargetPosition();
+            Vector3 thirdTarget = framer.CalculateTargetPosition();
+
+            Assert.That((secondTarget - firstTarget).sqrMagnitude, Is.LessThan(0.000001f));
+            Assert.That((thirdTarget - firstTarget).sqrMagnitude, Is.LessThan(0.000001f));
+        }
+
+        [Test]
         public void StageLightingBootstrap_UsesSpriteVisualInsteadOfGeneratedQuads()
         {
             GameObject bootstrapObject = new GameObject("Test Stage Lighting Bootstrap");

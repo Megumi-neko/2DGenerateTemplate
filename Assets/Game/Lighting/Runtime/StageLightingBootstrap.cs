@@ -24,6 +24,15 @@ namespace Game.Lighting
         [SerializeField, Min(0f)] private float edgeSoftness = 0.35f;
         [SerializeField, Range(0.01f, 0.99f)] private float innerRadiusMultiplier = 0.5f;
 
+        [Header("Candle Upgrades")]
+        [SerializeField, Min(0)] private int maximumRangeUpgradeLevel = 3;
+        [SerializeField, Min(0f)] private float rangeUpgradeAmount = 1f;
+        [SerializeField, Min(0)] private int maximumIntensityUpgradeLevel = 3;
+        [SerializeField, Min(0f)] private float intensityUpgradeAmount = 0.25f;
+        [SerializeField, Min(0f)] private float damageUpgradeAmount = 3f;
+        [SerializeField] private KeyCode rangeUpgradeKey = KeyCode.Alpha1;
+        [SerializeField] private KeyCode intensityUpgradeKey = KeyCode.Alpha2;
+
         [Header("Candle Visual")]
         [Tooltip("Optional visual-only prefab. It takes priority over the Sprite fields.")]
         [SerializeField] private GameObject candleVisualPrefab;
@@ -40,17 +49,89 @@ namespace Game.Lighting
         private GameObject createdCandle;
         private GameObject candleVisualRoot;
         private LightEmitter2D candleEmitter;
+        private StageLightingCameraFramer cameraFramer;
+        private int rangeUpgradeLevel;
+        private int intensityUpgradeLevel;
 
         public Camera TargetCamera => targetCamera;
         public LightEmitter2D CandleEmitter => candleEmitter;
         public InnerCircleLight2D InnerCircle => candleEmitter == null
             ? null
             : candleEmitter.GetComponent<InnerCircleLight2D>();
+        public StageLightingCameraFramer CameraFramer => cameraFramer;
+        public int RangeUpgradeLevel => rangeUpgradeLevel;
+        public int IntensityUpgradeLevel => intensityUpgradeLevel;
 
         private void Awake()
         {
             EnsureCameraAndOverlay();
             EnsureCandle();
+            EnsureCameraFramer();
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(rangeUpgradeKey))
+            {
+                UpgradeRange();
+            }
+
+            if (Input.GetKeyDown(intensityUpgradeKey))
+            {
+                UpgradeIntensity();
+            }
+        }
+
+        public bool UpgradeRange()
+        {
+            if (candleEmitter == null || rangeUpgradeLevel >= maximumRangeUpgradeLevel)
+            {
+                return false;
+            }
+
+            candleEmitter.BaseRadius += rangeUpgradeAmount;
+            rangeUpgradeLevel++;
+            cameraFramer?.ReframeImmediately();
+            return true;
+        }
+
+        public bool UpgradeIntensity()
+        {
+            if (candleEmitter == null || intensityUpgradeLevel >= maximumIntensityUpgradeLevel)
+            {
+                return false;
+            }
+
+            candleEmitter.BaseIntensity += intensityUpgradeAmount;
+            candleEmitter.BaseDamagePerSecond += damageUpgradeAmount;
+            intensityUpgradeLevel++;
+            cameraFramer?.ReframeImmediately();
+            return true;
+        }
+
+        private void EnsureCameraFramer()
+        {
+            if (targetCamera == null || candleEmitter == null)
+            {
+                return;
+            }
+
+            cameraFramer = targetCamera.GetComponent<StageLightingCameraFramer>();
+            if (cameraFramer == null)
+            {
+                cameraFramer = targetCamera.gameObject.AddComponent<StageLightingCameraFramer>();
+            }
+
+            cameraFramer.Initialize(targetCamera, candleEmitter, gameplayPlaneZ);
+        }
+
+        private void OnValidate()
+        {
+            maximumRangeUpgradeLevel = Mathf.Max(0, maximumRangeUpgradeLevel);
+            rangeUpgradeAmount = Mathf.Max(0f, rangeUpgradeAmount);
+            maximumIntensityUpgradeLevel = Mathf.Max(0, maximumIntensityUpgradeLevel);
+            intensityUpgradeAmount = Mathf.Max(0f, intensityUpgradeAmount);
+            damageUpgradeAmount = Mathf.Max(0f, damageUpgradeAmount);
         }
 
         private void OnDestroy()
