@@ -32,7 +32,6 @@
   <Project Path="Unity.Rider.Editor.csproj" />
   <Project Path="Unity.InternalAPIEditorBridge.001.csproj" />
   <Project Path="Unity.2D.SpriteShape.Runtime.csproj" />
-  <Project Path="Game.Combat.Tests.csproj" />
   <Project Path="Unity.VisualScripting.State.Editor.csproj" />
   <Project Path="Unity.2D.Animation.Runtime.csproj" />
   <Project Path="Unity.Burst.CodeGen.csproj" />
@@ -40,6 +39,7 @@
   <Project Path="Unity.2D.Tilemap.Extras.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.VisualScripting.State.csproj" />
+  <Project Path="Game.Combat.Tests.csproj" />
   <Project Path="Unity.TextMeshPro.csproj" />
   <Project Path="Unity.2D.Aseprite.Common.csproj" />
   <Project Path="Unity.2D.IK.Editor.csproj" />

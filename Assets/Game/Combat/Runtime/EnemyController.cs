@@ -25,6 +25,8 @@ namespace Game.Combat
         [SerializeField] private SpriteRenderer visual;
         [SerializeField] private Color bossColor = new Color(1f, 0.25f, 0.2f, 1f);
         [SerializeField, Min(1f)] private float bossScaleMultiplier = 1.5f;
+        [SerializeField, Min(0f)] private float threatScaleStep = 0.1f;
+
 
         private Health health;
         private Health target;
@@ -59,7 +61,13 @@ namespace Game.Combat
         private void Awake()
         {
             health = GetComponent<Health>();
-            health.Died += OnDied;            baseScale = transform.localScale;
+            health.Died += OnDied;
+            baseScale = transform.localScale;
+
+            if (visual == null)
+            {
+                visual = GetComponentInChildren<SpriteRenderer>();
+            }
 
             if (visualRoot == null && visual != null)
             {
@@ -69,11 +77,6 @@ namespace Game.Combat
             if (visualRoot != null)
             {
                 visualBaseScale = visualRoot.localScale;
-            }
-
-            if (visual == null)
-            {
-                visual = GetComponentInChildren<SpriteRenderer>();
             }
 
             if (visual != null)
@@ -184,11 +187,22 @@ namespace Game.Combat
             rewardGranted = false;
             isSpawned = true;
 
-            health.ResetHealth(stats.MaxHealth * Mathf.Max(0.01f, healthMultiplier));            transform.localScale = baseScale;
+            health.ResetHealth(stats.MaxHealth * Mathf.Max(0.01f, healthMultiplier));
+            float scaleMultiplier = GetScaleMultiplier(
+                ThreatLevel,
+                boss,
+                threatScaleStep,
+                bossScaleMultiplier);
+            transform.localScale = baseScale;
             if (visualRoot != null)
             {
-                visualRoot.localScale = boss ? visualBaseScale * bossScaleMultiplier : visualBaseScale;
+                visualRoot.localScale = visualBaseScale * scaleMultiplier;
             }
+            else
+            {
+                transform.localScale = baseScale * scaleMultiplier;
+            }
+
             if (visual != null)
             {
                 visual.color = boss ? bossColor : baseColor;
@@ -199,6 +213,22 @@ namespace Game.Combat
                 ActiveEnemiesInternal.Add(this);
             }
         }
+
+        public static float GetScaleMultiplier(
+            int threatLevel,
+            bool boss,
+            float threatScaleStep = 0.1f,
+            float bossScaleMultiplier = 1.5f)
+        {
+            int sanitizedThreat = Mathf.Clamp(
+                threatLevel,
+                EnemyStats.MinimumThreatLevel,
+                EnemyStats.MaximumThreatLevel);
+            float threatMultiplier = 1f +
+                (sanitizedThreat - EnemyStats.MinimumThreatLevel) * Mathf.Max(0f, threatScaleStep);
+            return threatMultiplier * (boss ? Mathf.Max(1f, bossScaleMultiplier) : 1f);
+        }
+
 
         public bool TakeDamage(float amount)
         {
@@ -271,6 +301,8 @@ namespace Game.Combat
             attackInterval = Mathf.Max(0.05f, attackInterval);
             illuminationSampleInterval = Mathf.Max(0.02f, illuminationSampleInterval);
             bossScaleMultiplier = Mathf.Max(1f, bossScaleMultiplier);
+            threatScaleStep = Mathf.Max(0f, threatScaleStep);
+
         }
     }
 }
