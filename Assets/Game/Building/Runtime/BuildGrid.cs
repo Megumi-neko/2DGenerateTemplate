@@ -263,6 +263,17 @@ namespace Game.Building
             occupiedCells.Clear();
         }
 
+        public void Unregister(BuildInstance instance)
+        {
+            if (instance == null) return;
+            List<Vector3Int> cellsToRemove = new List<Vector3Int>();
+            foreach (KeyValuePair<Vector3Int, BuildInstance> pair in occupiedCells)
+            {
+                if (pair.Value == instance) cellsToRemove.Add(pair.Key);
+            }
+            for (int i = 0; i < cellsToRemove.Count; i++) occupiedCells.Remove(cellsToRemove[i]);
+        }
+
         internal void ConfigureForTests(Grid gridToUse, BoundsInt bounds)
         {
             grid = gridToUse;

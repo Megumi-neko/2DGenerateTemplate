@@ -18,3 +18,12 @@ MonoBehaviour:
   footprint: {x: 2, y: 2}
   coinCost: 10
   canBuildDuringDay: 1
+  maxHealth: 150
+  emitsNightLight: 1
+  lightRadius: 2.5
+  lightIntensity: 0.8
+  lightDamagePerSecond: 3
+  lightDamageCap: 10
+  generatesCoins: 0
+  coinProductionAmount: 1
+  coinProductionInterval: 10

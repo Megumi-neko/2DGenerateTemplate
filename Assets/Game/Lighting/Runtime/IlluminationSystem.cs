@@ -123,6 +123,27 @@ namespace Game.Lighting
             return longestEmitter;
         }
 
+        public static bool IsAffectedByMinimumSector(Vector2 worldPosition)
+        {
+            for (int i = EmittersInternal.Count - 1; i >= 0; i--)
+            {
+                LightEmitter2D emitter = EmittersInternal[i];
+                if (emitter == null)
+                {
+                    EmittersInternal.RemoveAt(i);
+                    continue;
+                }
+
+                if (emitter.IsMinimumSectorAngle &&
+                    emitter.EvaluateInfluence(worldPosition) > ContributionThreshold)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public static bool IsLit(Vector2 worldPosition)
         {
             return Sample(worldPosition).IsLit;

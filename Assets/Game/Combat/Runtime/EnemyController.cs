@@ -18,6 +18,7 @@ namespace Game.Combat
         [SerializeField, Min(0.01f)] private float attackRange = 0.75f;
         [SerializeField, Min(0.05f)] private float attackInterval = 1f;
         [SerializeField, Min(0.02f)] private float illuminationSampleInterval = 0.1f;
+        [SerializeField, Range(0.01f, 1f)] private float minimumSectorSpeedMultiplier = 0.5f;
 
         [Header("Visual")]
         [SerializeField] private Transform visualRoot;
@@ -32,6 +33,9 @@ namespace Game.Combat
 
         private Health health;
         private Health target;
+        private Health towerTarget;
+        private BuildingHealth buildingTarget;
+        private Transform targetTransform;
         private Action<EnemyController> releaseRequested;
         private float moveSpeed;
         private float attackDamage;
@@ -131,7 +135,9 @@ namespace Game.Combat
 
         private void Update()
         {
-            if (!IsAlive || target == null || target.IsDead)
+            FindNearestTarget();
+            if (!IsAlive || targetTransform == null ||
+                (target == null && (buildingTarget == null || buildingTarget.IsDead)))
             {
                 return;
             }
@@ -143,7 +149,7 @@ namespace Game.Combat
             }
 
             Vector2 currentPosition = transform.position;
-            Vector2 targetPosition = target.transform.position;
+            Vector2 targetPosition = targetTransform.position;
             float distance = Vector2.Distance(currentPosition, targetPosition);
 
             if (distance > attackRange)
@@ -151,7 +157,7 @@ namespace Game.Combat
                 transform.position = Vector2.MoveTowards(
                     currentPosition,
                     targetPosition,
-                    moveSpeed * Time.deltaTime);
+                    moveSpeed * GetMovementSpeedMultiplier() * Time.deltaTime);
                 attackCooldown = Mathf.Max(0f, attackCooldown - Time.deltaTime);
                 return;
             }
@@ -159,7 +165,14 @@ namespace Game.Combat
             attackCooldown -= Time.deltaTime;
             if (attackCooldown <= 0f)
             {
-                target.TakeDamage(attackDamage);
+                if (buildingTarget != null && !buildingTarget.IsDead)
+                {
+                    buildingTarget.TakeDamage(attackDamage);
+                }
+                else if (target != null && !target.IsDead)
+                {
+                    target.TakeDamage(attackDamage);
+                }
                 attackCooldown = attackInterval;
             }
         }
@@ -175,6 +188,9 @@ namespace Game.Combat
             int reward = 0)
         {
             target = targetHealth;
+            towerTarget = targetHealth;
+            buildingTarget = null;
+            targetTransform = targetHealth == null ? null : targetHealth.transform;
             ThreatLevel = Mathf.Clamp(
                 threatLevel,
                 EnemyStats.MinimumThreatLevel,
@@ -255,7 +271,55 @@ namespace Game.Combat
             Action<EnemyController> callback = releaseRequested;
             releaseRequested = null;
             target = null;
+            buildingTarget = null;
+            targetTransform = null;
             callback?.Invoke(this);
+        }
+
+        private bool FindNearestTarget()
+        {
+            float nearestDistance = float.PositiveInfinity;
+            BuildInstance nearestBuilding = null;
+            BuildSystem buildSystem = FindObjectOfType<BuildSystem>();
+            if (buildSystem != null)
+            {
+                for (int i = 0; i < buildSystem.Builds.Count; i++)
+                {
+                    BuildInstance candidate = buildSystem.Builds[i];
+                    if (candidate == null || candidate.BuildingHealth == null || candidate.BuildingHealth.IsDead) continue;
+                    float distance = ((Vector2)candidate.transform.position - (Vector2)transform.position).sqrMagnitude;
+                    if (distance < nearestDistance) { nearestDistance = distance; nearestBuilding = candidate; }
+                }
+            }
+
+            if (nearestBuilding != null)
+            {
+                buildingTarget = nearestBuilding.BuildingHealth;
+                targetTransform = nearestBuilding.transform;
+                return true;
+            }
+
+            if (towerTarget != null && !towerTarget.IsDead)
+            {
+                target = towerTarget;
+                buildingTarget = null;
+                targetTransform = towerTarget.transform;
+                return true;
+            }
+
+            target = null;
+            targetTransform = null;
+            return false;
+        }
+
+        private float GetMovementSpeedMultiplier()
+        {
+            if (!IlluminationSystem.IsAffectedByMinimumSector(WorldPosition))
+            {
+                return 1f;
+            }
+
+            return Mathf.Clamp(minimumSectorSpeedMultiplier, 0.01f, 1f);
         }
 
         private void ApplyIlluminationDamage(float deltaTime)
@@ -308,6 +372,7 @@ namespace Game.Combat
             attackRange = Mathf.Max(0.01f, attackRange);
             attackInterval = Mathf.Max(0.05f, attackInterval);
             illuminationSampleInterval = Mathf.Max(0.02f, illuminationSampleInterval);
+            minimumSectorSpeedMultiplier = Mathf.Clamp(minimumSectorSpeedMultiplier, 0.01f, 1f);
             bossScaleMultiplier = Mathf.Max(1f, bossScaleMultiplier);
             baseScaleMultiplier = Mathf.Max(1f, baseScaleMultiplier);
             threatScaleStep = Mathf.Max(0f, threatScaleStep);

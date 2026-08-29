@@ -181,6 +181,10 @@ namespace Game.Lighting
 
         public Vector2 WorldPosition => new Vector2(transform.position.x, transform.position.y);
 
+        public bool IsMinimumSectorAngle =>
+            shape == LightShape2D.Sector &&
+            sectorAngle <= minimumSectorAngle + 0.0001f;
+
         public float Focus01 => LightGeometry2D.CalculateFocus01(shape, sectorAngle, minimumSectorAngle);
 
         public float FocusMultiplier => Mathf.Lerp(1f, maximumFocusMultiplier, Focus01);

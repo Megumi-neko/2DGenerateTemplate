@@ -1,3 +1,5 @@
+using Game.DayNight;
+using Game.Lighting;
 using UnityEngine;
 
 namespace Game.Building
@@ -14,7 +16,55 @@ namespace Game.Building
         public bool IsInitialized { get; private set; }
 
         private CoinInventory coinInventory;
+        private BuildingHealth buildingHealth;
+        private LightEmitter2D lightEmitter;
         private float productionTimer;
+
+        public BuildingHealth BuildingHealth => buildingHealth;
+        public LightEmitter2D LightEmitter => lightEmitter;
+
+        private void Awake()
+        {
+            buildingHealth = GetComponent<BuildingHealth>();
+            if (buildingHealth == null) buildingHealth = gameObject.AddComponent<BuildingHealth>();
+            buildingHealth.Died += OnBuildingDied;
+        }
+
+        private void OnEnable()
+        {
+            EventBus.Instance.Subscribe<DayNightStateChanged>(OnDayNightStateChanged);
+            UpdateNightLight();
+        }
+
+        private void OnDestroy()
+        {
+            if (buildingHealth != null) buildingHealth.Died -= OnBuildingDied;
+            EventBus.Instance.UnSubscribe<DayNightStateChanged>(OnDayNightStateChanged);
+            if (lightEmitter != null) Destroy(lightEmitter);
+        }
+
+        private void UpdateNightLight()
+        {
+            if (!IsInitialized || Definition == null) return;
+            if (lightEmitter == null) lightEmitter = GetComponent<LightEmitter2D>();
+            if (lightEmitter == null) lightEmitter = gameObject.AddComponent<LightEmitter2D>();
+            lightEmitter.Shape = LightShape2D.Circle;
+            lightEmitter.BaseRadius = Definition.LightRadius;
+            lightEmitter.BaseIntensity = Definition.LightIntensity;
+            lightEmitter.BaseDamagePerSecond = Mathf.Min(
+                Definition.LightDamagePerSecond,
+                Definition.LightDamageCap);
+            DayNightSystem dayNight = FindObjectOfType<DayNightSystem>();
+            lightEmitter.SetEmitting(Definition.EmitsNightLight && buildingHealth != null && !buildingHealth.IsDead &&
+                (dayNight == null || dayNight.CurrentPhase == DayNightPhase.Night));
+        }
+
+        private void OnDayNightStateChanged(DayNightStateChanged state) { UpdateNightLight(); }
+        private void OnBuildingDied(BuildingHealth _)
+        {
+            lightEmitter?.SetEmitting(false);
+            Destroy(gameObject);
+        }
 
         private void Update()
         {
@@ -60,6 +110,12 @@ namespace Game.Building
             coinInventory = inventory;
             productionTimer = 0f;
             IsInitialized = definition != null;
+            if (IsInitialized)
+            {
+                if (buildingHealth == null) buildingHealth = GetComponent<BuildingHealth>();
+                buildingHealth?.ResetHealth(definition.MaxHealth);
+                UpdateNightLight();
+            }
         }
 
         public void ConfigureEconomy(CoinInventory inventory)

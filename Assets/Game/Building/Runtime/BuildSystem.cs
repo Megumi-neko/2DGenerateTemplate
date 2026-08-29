@@ -94,12 +94,20 @@ namespace Game.Building
             }
 
             builds.Add(instance);
+            instance.BuildingHealth.Died += _ => RemoveBuild(instance);
             LastFailureReason = BuildPlacementFailureReason.None;
             EventBus.Instance.Publish(new BuildPlaced(
                 instance,
                 definition.BuildingId,
                 cellPosition,
                 definition.Footprint));
+            return true;
+        }
+
+        public bool RemoveBuild(BuildInstance instance)
+        {
+            if (instance == null || !builds.Remove(instance)) return false;
+            buildGrid?.Unregister(instance);
             return true;
         }
 
