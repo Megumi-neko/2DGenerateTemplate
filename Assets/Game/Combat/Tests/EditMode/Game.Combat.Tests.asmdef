@@ -1,0 +1,21 @@
+{
+  "name": "Game.Combat.Tests",
+  "rootNamespace": "Game.Combat.Tests",
+  "references": [
+    "Game.Combat"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
