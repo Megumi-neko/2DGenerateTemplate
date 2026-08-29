@@ -83,7 +83,7 @@ namespace Game.Building
                 return false;
             }
 
-            instance.Initialize(definition, cellPosition);
+            instance.Initialize(definition, cellPosition, 0, coinInventory);
             if (!buildGrid.TryRegister(instance, cellPosition, definition.Footprint))
             {
                 Destroy(instanceObject);

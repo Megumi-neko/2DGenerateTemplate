@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Lighting;
+using Game.Building;
 using UnityEngine;
 
 namespace Game.Combat
@@ -38,6 +39,9 @@ namespace Game.Combat
         [SerializeField] private Camera targetCamera;
 
         private bool isSpawned;
+        [SerializeField] private CoinInventory coinInventory;
+        private int coinReward;
+        private bool rewardGranted;
 
         public static IReadOnlyList<EnemyController> ActiveEnemies => ActiveEnemiesInternal;
         public Health Health => health;
@@ -162,7 +166,8 @@ namespace Game.Combat
             bool boss,
             float healthMultiplier,
             float attackMultiplier,
-            Action<EnemyController> onReleaseRequested)
+            Action<EnemyController> onReleaseRequested,
+            int reward = 0)
         {
             target = targetHealth;
             ThreatLevel = Mathf.Clamp(
@@ -175,6 +180,8 @@ namespace Game.Combat
             attackCooldown = attackInterval;
             illuminationAccumulator = 0f;
             releaseRequested = onReleaseRequested;
+            coinReward = Mathf.Max(0, reward);
+            rewardGranted = false;
             isSpawned = true;
 
             health.ResetHealth(stats.MaxHealth * Mathf.Max(0.01f, healthMultiplier));            transform.localScale = baseScale;
@@ -232,6 +239,17 @@ namespace Game.Combat
 
         private void OnDied(Health _)
         {
+            if (!rewardGranted)
+            {
+                rewardGranted = true;
+                if (coinInventory == null)
+                {
+                    coinInventory = FindObjectOfType<CoinInventory>();
+                }
+
+                coinInventory?.Add(coinReward);
+            }
+
             RequestRelease();
         }
 

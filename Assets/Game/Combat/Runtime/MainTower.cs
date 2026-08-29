@@ -10,6 +10,13 @@ namespace Game.Combat
         [Header("Level")]
         [SerializeField, Range(1, 6)] private int level = 1;
 
+        [Header("Upgrade Economy")]
+        [SerializeField, Min(1)] private int maximumLevel = 6;
+        [SerializeField, Min(0)] private int upgradeBaseCost = 25;
+        [SerializeField, Min(0)] private int upgradeCostPerLevel = 15;
+        [SerializeField] private Game.Building.CoinInventory coinInventory;
+
+
         [Header("Base Stats")]
         [SerializeField, Min(1f)] private float baseMaxHealth = 500f;
         [SerializeField, Min(0f)] private float healthPerLevel = 100f;
@@ -27,6 +34,12 @@ namespace Game.Combat
         public int Level => level;
         public float AttackDamage { get; private set; }
         public float AttackRange { get; private set; }
+        public int NextUpgradeCost => CanUpgrade
+            ? CalculateUpgradeCost(level)
+            : 0;
+        public bool CanUpgrade => level < maximumLevel;
+        public event System.Action<int, int> Upgraded;
+
 
         private void Awake()
         {
@@ -57,9 +70,46 @@ namespace Game.Combat
             attackCooldown = attackInterval;
         }
 
-        public void SetLevel(int newLevel)
+        public bool TryUpgrade()
         {
-            int sanitizedLevel = Mathf.Clamp(newLevel, 1, 6);
+            ResolveCoinInventory();
+            int upgradeCost = NextUpgradeCost;
+            if (!CanUpgrade || coinInventory == null ||
+                !coinInventory.TrySpend(upgradeCost))
+            {
+                return false;
+            }
+
+            level++;
+            ApplyLevel(true);
+            Upgraded?.Invoke(level, upgradeCost);
+            return true;
+        }
+
+        private int CalculateUpgradeCost(int currentLevel)
+        {
+            long cost = (long)Mathf.Max(0, upgradeBaseCost) +
+                (long)Mathf.Max(0, currentLevel - 1) * Mathf.Max(0, upgradeCostPerLevel);
+            return cost > int.MaxValue ? int.MaxValue : (int)cost;
+        }
+
+        private void ResolveCoinInventory()
+        {
+            if (coinInventory == null)
+            {
+                coinInventory = FindObjectOfType<Game.Building.CoinInventory>();
+            }
+        }
+
+        internal void ConfigureEconomyForTests(Game.Building.CoinInventory inventory)
+        {
+            coinInventory = inventory;
+        }
+
+        
+public void SetLevel(int newLevel)
+        {
+            int sanitizedLevel = Mathf.Clamp(newLevel, 1, maximumLevel);
             if (level == sanitizedLevel && health != null)
             {
                 return;
@@ -119,7 +169,10 @@ namespace Game.Combat
 
         private void OnValidate()
         {
-            level = Mathf.Clamp(level, 1, 6);
+            maximumLevel = Mathf.Clamp(maximumLevel, 1, 6);
+            level = Mathf.Clamp(level, 1, maximumLevel);
+            upgradeBaseCost = Mathf.Max(0, upgradeBaseCost);
+            upgradeCostPerLevel = Mathf.Max(0, upgradeCostPerLevel);
             baseMaxHealth = Mathf.Max(1f, baseMaxHealth);
             healthPerLevel = Mathf.Max(0f, healthPerLevel);
             baseAttackDamage = Mathf.Max(0f, baseAttackDamage);

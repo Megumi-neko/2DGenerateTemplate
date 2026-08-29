@@ -76,12 +76,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 20
-  m_Sprite: {fileID: 21300000, guid: baa4ec24d99156245bb398f7d4caf0c3, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 033e89f9ee1eb484e81d5fc6335292cf, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.32, y: 0.32}
+  m_Size: {x: 20.48, y: 20.48}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -151,6 +151,10 @@ MonoBehaviour:
   attackRange: 0.75
   attackInterval: 1
   illuminationSampleInterval: 0.1
+  visualRoot: {fileID: 0}
   visual: {fileID: 0}
   bossColor: {r: 1, g: 0.25, b: 0.2, a: 1}
   bossScaleMultiplier: 1.5
+  faceCamera: 1
+  targetCamera: {fileID: 0}
+  coinInventory: {fileID: 0}

@@ -10,15 +10,19 @@ namespace Game.Combat
         [SerializeField, Min(0f)] private float attackDamage;
         [SerializeField, Min(0f)] private float moveSpeed;
 
+        [SerializeField, Min(0)] private int coinReward;
+
         public float MaxHealth => maxHealth;
         public float AttackDamage => attackDamage;
         public float MoveSpeed => moveSpeed;
+        public int CoinReward => coinReward;
 
-        public EnemyLevelStats(float maxHealth, float attackDamage, float moveSpeed)
+        public EnemyLevelStats(float maxHealth, float attackDamage, float moveSpeed, int coinReward = 0)
         {
             this.maxHealth = Mathf.Max(1f, maxHealth);
             this.attackDamage = Mathf.Max(0f, attackDamage);
             this.moveSpeed = Mathf.Max(0f, moveSpeed);
+            this.coinReward = Mathf.Max(0, coinReward);
         }
     }
 
@@ -30,29 +34,29 @@ namespace Game.Combat
 
         private static readonly EnemyLevelStats[] DefaultLevels =
         {
-            new EnemyLevelStats(30f, 5f, 1.2f),
-            new EnemyLevelStats(45f, 7f, 1.25f),
-            new EnemyLevelStats(65f, 10f, 1.3f),
-            new EnemyLevelStats(90f, 14f, 1.35f),
-            new EnemyLevelStats(125f, 19f, 1.4f),
-            new EnemyLevelStats(170f, 25f, 1.45f)
+            new EnemyLevelStats(30f, 5f, 1.2f, 2),
+            new EnemyLevelStats(45f, 7f, 1.25f, 4),
+            new EnemyLevelStats(65f, 10f, 1.3f, 7),
+            new EnemyLevelStats(90f, 14f, 1.35f, 11),
+            new EnemyLevelStats(125f, 19f, 1.4f, 16),
+            new EnemyLevelStats(170f, 25f, 1.45f, 22)
         };
 
         [SerializeField] private EnemyLevelStats[] levels =
         {
-            new EnemyLevelStats(30f, 5f, 1.2f),
-            new EnemyLevelStats(45f, 7f, 1.25f),
-            new EnemyLevelStats(65f, 10f, 1.3f),
-            new EnemyLevelStats(90f, 14f, 1.35f),
-            new EnemyLevelStats(125f, 19f, 1.4f),
-            new EnemyLevelStats(170f, 25f, 1.45f)
+            new EnemyLevelStats(30f, 5f, 1.2f, 2),
+            new EnemyLevelStats(45f, 7f, 1.25f, 4),
+            new EnemyLevelStats(65f, 10f, 1.3f, 7),
+            new EnemyLevelStats(90f, 14f, 1.35f, 11),
+            new EnemyLevelStats(125f, 19f, 1.4f, 16),
+            new EnemyLevelStats(170f, 25f, 1.45f, 22)
         };
 
         public EnemyLevelStats Get(int threatLevel)
         {
             int index = Mathf.Clamp(threatLevel, MinimumThreatLevel, MaximumThreatLevel) - 1;
             if (levels == null || levels.Length != MaximumThreatLevel ||
-                levels[index].MaxHealth <= 0f)
+                levels[index].MaxHealth <= 0f || levels[index].CoinReward <= 0)
             {
                 return DefaultLevels[index];
             }
@@ -64,6 +68,11 @@ namespace Game.Combat
         {
             int index = Mathf.Clamp(threatLevel, MinimumThreatLevel, MaximumThreatLevel) - 1;
             return DefaultLevels[index];
+        }
+
+        public int GetCoinReward(int threatLevel)
+        {
+            return Get(threatLevel).CoinReward;
         }
 
         public static int GetMaximumThreatForDay(int day, int initialThreatLevel = 2)

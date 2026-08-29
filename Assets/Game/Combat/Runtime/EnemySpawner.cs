@@ -31,6 +31,7 @@ namespace Game.Combat
         [Header("Boss Multipliers")]
         [SerializeField, Min(1f)] private float bossHealthMultiplier = 4f;
         [SerializeField, Min(1f)] private float bossAttackMultiplier = 1.75f;
+        [SerializeField, Min(1f)] private float bossCoinRewardMultiplier = 2f;
 
         private readonly HashSet<EnemyController> activeEnemies =
             new HashSet<EnemyController>();
@@ -206,7 +207,8 @@ namespace Game.Combat
                 boss,
                 boss ? bossHealthMultiplier : 1f,
                 boss ? bossAttackMultiplier : 1f,
-                OnEnemyReleaseRequested);
+                OnEnemyReleaseRequested,
+                GetCoinReward(sanitizedThreat, boss));
 
             activeEnemies.Add(enemy);
             if (!boss)
@@ -215,6 +217,20 @@ namespace Game.Combat
             }
 
             return true;
+        }
+
+        private int GetCoinReward(int threatLevel, bool boss)
+        {
+            int reward = enemyStats == null
+                ? EnemyStats.GetDefault(threatLevel).CoinReward
+                : enemyStats.GetCoinReward(threatLevel);
+            if (!boss)
+            {
+                return reward;
+            }
+
+            float multiplied = reward * Mathf.Max(1f, bossCoinRewardMultiplier);
+            return multiplied >= int.MaxValue ? int.MaxValue : Mathf.Max(0, Mathf.RoundToInt(multiplied));
         }
 
         private int ChooseThreatLevel(int maximumThreat)
