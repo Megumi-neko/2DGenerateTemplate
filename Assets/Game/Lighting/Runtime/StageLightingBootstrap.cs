@@ -74,7 +74,8 @@ namespace Game.Lighting
         public StageLightingCameraFramer CameraFramer => cameraFramer;
         public int RangeUpgradeLevel => rangeUpgradeLevel;
         public int IntensityUpgradeLevel => intensityUpgradeLevel;
-
+        public int MaximumRangeUpgradeLevel => maximumRangeUpgradeLevel;
+        public int MaximumIntensityUpgradeLevel => maximumIntensityUpgradeLevel;
         private void Awake()
         {
             EnsureCameraAndOverlay();
@@ -82,18 +83,7 @@ namespace Game.Lighting
             EnsureCameraFramer();
         }
 
-        private void Update()
-        {
-            if (Input.GetKeyDown(rangeUpgradeKey))
-            {
-                UpgradeRange();
-            }
 
-            if (Input.GetKeyDown(intensityUpgradeKey))
-            {
-                UpgradeIntensity();
-            }
-        }
 
         public bool UpgradeRange()
         {
@@ -139,6 +129,10 @@ namespace Game.Lighting
 
             cameraFramer.Initialize(targetCamera, candleEmitter, gameplayPlaneZ);
         }
+
+
+
+
 
         private void OnValidate()
         {

@@ -27,7 +27,7 @@ namespace Game.UI
         private void Awake()
         {
             ResolveReferences();
-            CreateLookoutTowerButton();
+            ConfigureLookoutTowerButton();
         }
 
         private void OnEnable()
@@ -215,59 +215,26 @@ namespace Game.UI
             }
         }
 
-        private void CreateLookoutTowerButton()
+        private void ConfigureLookoutTowerButton()
         {
             if (stageUIController == null || stageUIController.ConstructPanel == null)
             {
                 return;
             }
 
-            Transform panel = stageUIController.ConstructPanel.transform;
-            Transform existingButton = panel.Find("Lookout Tower Button");
-            if (existingButton != null)
-            {
-                lookoutTowerButton = existingButton.GetComponent<Button>();
-            }
-
+            Transform buttonTransform = stageUIController.ConstructPanel.transform.Find("BuidLookout");
+            lookoutTowerButton = buttonTransform == null
+                ? null
+                : buttonTransform.GetComponent<Button>();
             if (lookoutTowerButton == null)
             {
-                GameObject buttonObject = new GameObject(
-                    "Lookout Tower Button",
-                    typeof(RectTransform),
-                    typeof(Image),
-                    typeof(Button));
-                buttonObject.transform.SetParent(panel, false);
-                RectTransform rect = buttonObject.GetComponent<RectTransform>();
-                rect.anchorMin = new Vector2(0f, 0.5f);
-                rect.anchorMax = new Vector2(0f, 0.5f);
-                rect.pivot = new Vector2(0f, 0.5f);
-                rect.anchoredPosition = new Vector2(24f, 0f);
-                rect.sizeDelta = new Vector2(180f, 64f);
-
-                Image image = buttonObject.GetComponent<Image>();
-                image.color = new Color(0.2f, 0.5f, 0.25f, 1f);
-                lookoutTowerButton = buttonObject.GetComponent<Button>();
-                lookoutTowerButton.targetGraphic = image;
-
-                GameObject textObject = new GameObject(
-                    "Label",
-                    typeof(RectTransform),
-                    typeof(Text));
-                textObject.transform.SetParent(buttonObject.transform, false);
-                RectTransform textRect = textObject.GetComponent<RectTransform>();
-                textRect.anchorMin = Vector2.zero;
-                textRect.anchorMax = Vector2.one;
-                textRect.offsetMin = Vector2.zero;
-                textRect.offsetMax = Vector2.zero;
-                Text label = textObject.GetComponent<Text>();
-                label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                label.fontSize = 20;
-                label.alignment = TextAnchor.MiddleCenter;
-                label.color = Color.white;
-                label.text = "瞭望塔\n影结晶：10";
+                Debug.LogWarning(
+                    $"[{nameof(BuildInputController)}] The authored BuidLookout button " +
+                    "could not be found in the ConstructPanel.",
+                    this);
+                return;
             }
 
-            RefreshLookoutTowerLabel();
             lookoutTowerButton.onClick.RemoveListener(BeginLookoutTowerPlacement);
             lookoutTowerButton.onClick.AddListener(BeginLookoutTowerPlacement);
         }

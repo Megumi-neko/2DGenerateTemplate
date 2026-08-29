@@ -41,6 +41,11 @@ namespace Game.UI
         [SerializeField] private Button exitButton;
         [SerializeField] private GameObject settingsPanel;
         [SerializeField] private GameObject constructPanel;
+        [SerializeField] private Button intensityUpgradeButton;
+        [SerializeField] private Button rangeUpgradeButton;
+        [SerializeField] private StageLightingBootstrap stageLightingBootstrap;
+        [SerializeField, Min(0)] private int baseIntensityUpgradeCost = 2;
+        [SerializeField, Min(0)] private int baseRangeUpgradeCost = 2;
 
         [Header("Scene Flow")]
         [SerializeField] private string mainMenuSceneName = "MainMenu";
@@ -78,6 +83,7 @@ namespace Game.UI
                 ? Mathf.Max(0, initialCoinCount)
                 : coinInventory.Coins;
             ResolveSettingsButtons();
+            ResolveUpgradeButtons();
             ConfigureButtonListeners();
             EnsureDayNightLightingController();
             CloseSettings();
@@ -236,6 +242,7 @@ namespace Game.UI
             }
 
             CoinCountChanged?.Invoke(coinCount);
+            RefreshUpgradeButtons();
         }
 
         public void OpenSettings()
@@ -386,6 +393,75 @@ namespace Game.UI
                     CloseConstruct();
                 }
             }
+
+            RefreshUpgradeButtons();
+        }
+
+        private void ResolveUpgradeButtons()
+        {
+            if (stageLightingBootstrap == null)
+            {
+                stageLightingBootstrap = FindObjectOfType<StageLightingBootstrap>();
+            }
+
+            if (constructPanel == null)
+            {
+                return;
+            }
+
+            if (intensityUpgradeButton == null)
+            {
+                Transform button = constructPanel.transform.Find("IntensityUp");
+                intensityUpgradeButton = button == null ? null : button.GetComponent<Button>();
+            }
+
+            if (rangeUpgradeButton == null)
+            {
+                Transform button = constructPanel.transform.Find("LengthUp");
+                rangeUpgradeButton = button == null ? null : button.GetComponent<Button>();
+            }
+        }
+
+        private void OnIntensityUpgradeClicked()
+        {
+            if (stageLightingBootstrap != null &&
+                TrySpendUpgrade(baseIntensityUpgradeCost, stageLightingBootstrap.IntensityUpgradeLevel) &&
+                stageLightingBootstrap.UpgradeIntensity())
+            {
+                RefreshUpgradeButtons();
+            }
+        }
+
+        private void OnRangeUpgradeClicked()
+        {
+            if (stageLightingBootstrap != null &&
+                TrySpendUpgrade(baseRangeUpgradeCost, stageLightingBootstrap.RangeUpgradeLevel) &&
+                stageLightingBootstrap.UpgradeRange())
+            {
+                RefreshUpgradeButtons();
+            }
+        }
+
+        private bool TrySpendUpgrade(int baseCost, int level)
+        {
+            int cost = Mathf.Max(0, baseCost) * (Mathf.Max(0, level) + 1);
+            return coinInventory == null || coinInventory.TrySpend(cost);
+        }
+
+        private void RefreshUpgradeButtons()
+        {
+            if (stageLightingBootstrap == null)
+            {
+                return;
+            }
+
+            bool isDay = dayNightSystem == null || dayNightSystem.CurrentPhase == DayNightPhase.Day;
+            SetInteractable(intensityUpgradeButton, isDay &&
+                stageLightingBootstrap.IntensityUpgradeLevel < stageLightingBootstrap.MaximumIntensityUpgradeLevel &&
+                coinCount >= Mathf.Max(0, baseIntensityUpgradeCost) * (stageLightingBootstrap.IntensityUpgradeLevel + 1));
+            SetInteractable(rangeUpgradeButton, isDay &&
+                stageLightingBootstrap.RangeUpgradeLevel < stageLightingBootstrap.MaximumRangeUpgradeLevel &&
+                coinCount >= Mathf.Max(0, baseRangeUpgradeCost) * (stageLightingBootstrap.RangeUpgradeLevel + 1));
         }
 
         private void EnsureDayNightLightingController()
@@ -441,6 +517,18 @@ namespace Game.UI
             {
                 exitButton.onClick.RemoveListener(QuitGame);
                 exitButton.onClick.AddListener(QuitGame);
+            }
+
+            if (intensityUpgradeButton != null)
+            {
+                intensityUpgradeButton.onClick.RemoveListener(OnIntensityUpgradeClicked);
+                intensityUpgradeButton.onClick.AddListener(OnIntensityUpgradeClicked);
+            }
+
+            if (rangeUpgradeButton != null)
+            {
+                rangeUpgradeButton.onClick.RemoveListener(OnRangeUpgradeClicked);
+                rangeUpgradeButton.onClick.AddListener(OnRangeUpgradeClicked);
             }
         }
 
