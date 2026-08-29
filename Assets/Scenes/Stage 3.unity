@@ -61276,6 +61276,7 @@ GameObject:
   - component: {fileID: 3100000008}
   - component: {fileID: 3100000007}
   - component: {fileID: 3100000010}
+  - component: {fileID: 3100000011}
   m_Layer: 0
   m_Name: Building System
   m_TagString: Untagged
@@ -61433,6 +61434,28 @@ MonoBehaviour:
   movementSpeed: 8
   movementFieldOfViewThreshold: 55
   boundaryPadding: 0.1
+--- !u!114 &3100000011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7f0e1a2b3c4d5e6f708192a3b4c5d6e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  dayNightSystem: {fileID: 2100000003}
+  dayTurnsIntoNightClip: {fileID: 32900000, guid: d1b61537921509449ad644ee21071271, type: 3}
+  nightTurnsIntoDayClip: {fileID: 32900000, guid: 7ed06b432162bf3429adad7c173883e4, type: 3}
+  transitionDuration: 1.8
+  videoTimeout: 12
+  nightOverlayAlpha: 0.62
+  duskColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
+  nightColor: {r: 0, g: 0, b: 0, a: 1}
+  dawnColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
+  sortingOrder: 32000
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
