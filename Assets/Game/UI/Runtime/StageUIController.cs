@@ -101,8 +101,11 @@ namespace Game.UI
             }
         }
 
-        private void OnEnable()
+private void OnEnable()
         {
+            ResolveSettingsButtons();
+            ResolveUpgradeButtons();
+            ConfigureButtonListeners();
             SubscribeToEvents();
             if (coinInventory != null)
             {
