@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Game.Lighting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -15,6 +16,7 @@ namespace Game.Building
         private const int OutlineBorderSize = 1;
 
         [SerializeField] private BuildGrid buildGrid;
+        [SerializeField] private BuildSystem buildSystem;
         [SerializeField] private Tilemap gridTilemap;
         [SerializeField] private TileBase outlineTile;
         [SerializeField] private bool hideOccupiedCells = true;
@@ -26,6 +28,8 @@ namespace Game.Building
         private Tile runtimeTile;
         private Sprite runtimeSprite;
         private Texture2D runtimeTexture;
+        private LightEmitter2D cachedBuildLight;
+        private float cachedBuildRange = -1f;
         private bool isShown;
 
         public bool IsVisible => isShown;
@@ -35,6 +39,27 @@ namespace Game.Building
             ResolveReferences();
             EnsurePreviewResources();
             SetTilemapActive(false);
+        }
+
+        private void Update()
+        {
+            if (!isShown)
+            {
+                return;
+            }
+
+            ResolveReferences();
+            LightEmitter2D currentLight = buildSystem == null
+                ? null
+                : buildSystem.BuildLight;
+            float currentRange = currentLight == null
+                ? -1f
+                : currentLight.MaximumEffectiveRange;
+            if (currentLight != cachedBuildLight ||
+                !Mathf.Approximately(currentRange, cachedBuildRange))
+            {
+                Rebuild();
+            }
         }
 
         private void OnEnable()
@@ -79,6 +104,8 @@ namespace Game.Building
         public void Hide()
         {
             isShown = false;
+            cachedBuildLight = null;
+            cachedBuildRange = -1f;
             Clear();
             SetTilemapActive(false);
         }
@@ -95,6 +122,18 @@ namespace Game.Building
                 return;
             }
 
+            LightEmitter2D buildLight = buildSystem == null
+                ? null
+                : buildSystem.BuildLight;
+            cachedBuildLight = buildLight;
+            cachedBuildRange = buildLight == null
+                ? -1f
+                : buildLight.MaximumEffectiveRange;
+            if (buildLight == null)
+            {
+                return;
+            }
+
             BoundsInt bounds = buildGrid.BuildBounds;
             if (bounds.size.x <= 0 || bounds.size.y <= 0)
             {
@@ -104,7 +143,12 @@ namespace Game.Building
             foreach (Vector3Int cell in bounds.allPositionsWithin)
             {
                 if (!buildGrid.IsBuildableCell(cell) ||
-                    hideOccupiedCells && buildGrid.IsOccupied(cell))
+                    hideOccupiedCells && buildGrid.IsOccupied(cell) ||
+                    !buildGrid.IsFootprintInsideCircle(
+                        cell,
+                        Vector2Int.one,
+                        buildLight.WorldPosition,
+                        buildLight.MaximumEffectiveRange))
                 {
                     continue;
                 }
@@ -143,6 +187,12 @@ namespace Game.Building
             {
                 buildGrid = GetComponent<BuildGrid>() ??
                     FindObjectOfType<BuildGrid>();
+            }
+
+            if (buildSystem == null)
+            {
+                buildSystem = GetComponent<BuildSystem>() ??
+                    FindObjectOfType<BuildSystem>();
             }
         }
 

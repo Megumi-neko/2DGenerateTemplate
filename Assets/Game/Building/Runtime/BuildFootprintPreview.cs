@@ -116,6 +116,9 @@ namespace Game.Building
                         ? ValidColor
                         : InvalidColor;
 
+                case BuildPlacementFailureReason.OutsideLightRange:
+                    return InvalidColor;
+
                 case BuildPlacementFailureReason.InsufficientCoins:
                     return InsufficientCoinsColor;
 

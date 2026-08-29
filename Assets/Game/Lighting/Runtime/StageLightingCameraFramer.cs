@@ -38,12 +38,23 @@ namespace Game.Lighting
         private Vector3 positionVelocity;
         private Vector3 targetPosition;
         private bool initialized;
+        private bool manualMode;
 
         public Camera TargetCamera => targetCamera;
         public LightEmitter2D Emitter => emitter;
         public Vector3 InitialPosition => initialPosition;
         public Vector3 TargetPosition => targetPosition;
         public float ScreenPadding => screenPadding;
+        public bool IsManualMode => manualMode;
+
+        public void SetManualMode(bool value)
+        {
+            manualMode = value;
+            if (manualMode)
+            {
+                positionVelocity = Vector3.zero;
+            }
+        }
 
         public void Initialize(Camera cameraToUse, LightEmitter2D emitterToFrame, float planeZ)
         {
@@ -144,7 +155,7 @@ namespace Game.Lighting
 
         private void LateUpdate()
         {
-            if (!initialized || targetCamera == null || emitter == null)
+            if (manualMode || !initialized || targetCamera == null || emitter == null)
             {
                 return;
             }

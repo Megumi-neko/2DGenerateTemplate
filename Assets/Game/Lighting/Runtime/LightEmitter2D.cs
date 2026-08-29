@@ -189,6 +189,9 @@ namespace Game.Lighting
             ? baseRadius
             : LightGeometry2D.CalculateEqualAreaRange(baseRadius, sectorAngle);
 
+        public float MaximumEffectiveRange =>
+            LightGeometry2D.CalculateEqualAreaRange(baseRadius, minimumSectorAngle);
+
         public float BaselineArea => LightGeometry2D.CalculateCircleArea(baseRadius);
 
         public float EffectiveArea => shape == LightShape2D.Circle

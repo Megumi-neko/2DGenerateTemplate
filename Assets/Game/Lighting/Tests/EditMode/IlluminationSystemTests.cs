@@ -97,6 +97,20 @@ namespace Game.Lighting.Tests
         }
 
         [Test]
+        public void MaximumEffectiveRange_UsesMinimumSectorAngle()
+        {
+            LightEmitter2D emitter = CreateEmitter(Vector2.zero, 5f, 1f, 10f);
+            emitter.Shape = LightShape2D.Sector;
+            emitter.MinimumSectorAngle = 36f;
+            emitter.SectorAngle = 90f;
+
+            Assert.That(
+                emitter.MaximumEffectiveRange,
+                Is.EqualTo(5f * Mathf.Sqrt(10f)).Within(0.0001f));
+            Assert.That(emitter.MaximumEffectiveRange, Is.GreaterThan(emitter.EffectiveRange));
+        }
+
+        [Test]
         public void SettingZeroDirection_PreservesLastValidDirection()
         {
             LightEmitter2D emitter = CreateEmitter(Vector2.zero, 4f, 1f, 10f);
@@ -160,6 +174,28 @@ namespace Game.Lighting.Tests
             Assert.That(controller.IsAimLocked, Is.True);
             controller.ToggleAimLock();
             Assert.That(controller.IsAimLocked, Is.False);
+        }
+
+        [Test]
+        public void CandleFocusController_LockFreezesSectorAngleInput()
+        {
+            GameObject controllerObject = new GameObject("Test Locked Focus Controller");
+            createdObjects.Add(controllerObject);
+            LightEmitter2D emitter = controllerObject.AddComponent<LightEmitter2D>();
+            emitter.Shape = LightShape2D.Sector;
+            emitter.MinimumSectorAngle = 36f;
+            emitter.SectorAngle = 90f;
+            CandleFocusController controller =
+                controllerObject.AddComponent<CandleFocusController>();
+            controller.Initialize(null, emitter);
+
+            controller.SetAimLocked(true);
+            controller.ApplySectorAngleInput(1f);
+            Assert.That(emitter.SectorAngle, Is.EqualTo(90f));
+
+            controller.SetAimLocked(false);
+            controller.ApplySectorAngleInput(1f);
+            Assert.That(emitter.SectorAngle, Is.EqualTo(80f));
         }
 
         [Test]
