@@ -800,7 +800,7 @@ PlayerSettings:
     Stadia: DOTWEEN
     Standalone: DOTWEEN;UEE
     VisionOS: DOTWEEN
-    WebGL: DOTWEEN
+    WebGL: DOTWEEN;UEE
     Windows Store Apps: DOTWEEN
     XboxOne: DOTWEEN
     iPhone: DOTWEEN

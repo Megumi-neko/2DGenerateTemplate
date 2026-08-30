@@ -159462,7 +159462,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1466794798
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -168451,6 +168451,21 @@ MonoBehaviour:
   maximumCameraRise: 0
   maximumCameraBackstep: 80
   enforceSafeViewportDuringMotion: 1
+--- !u!114 &1848669779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848669773}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4a7c9f2b6d1e8a503947c6f2d1b8e55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultAmplitude: 0.12
+  defaultDuration: 0.2
+  frequency: 28
 --- !u!1 &1850866873
 GameObject:
   m_ObjectHideFlags: 0
@@ -173977,7 +173992,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u77AD\u671B\u5854\uFF1A100"
+  m_Text: "\u77AD\u671B\u5854\uFF1A10"
 --- !u!222 &2057577966
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -177165,21 +177180,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   currentHealth: 100
---- !u!114 &1848669779
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1848669773}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4a7c9f2b6d1e8a503947c6f2d1b8e55, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  defaultAmplitude: 0.12
-  defaultDuration: 0.2
-  frequency: 28
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
