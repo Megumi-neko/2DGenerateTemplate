@@ -16,6 +16,7 @@ namespace Game.Combat
         [SerializeField] private MainTower mainTower;
         [SerializeField] private Transform enemiesRoot;
         [SerializeField] private Transform[] spawnPoints;
+        [SerializeField] private GameObject bossWarningFrame;
 
         [Header("Night Spawning")]
         [SerializeField, Range(1, 6)] private int initialThreatLevel = 2;
@@ -66,6 +67,7 @@ namespace Game.Combat
         {
             ResolveReferences();
             InitializePool();
+            HideBossWarning();
         }
 
         private void OnEnable()
@@ -112,6 +114,10 @@ namespace Game.Combat
                 dayNightSystem.NightRemainingRatio))
             {
                 bossSpawnedThisNight = SpawnEnemy(CurrentMaximumThreatLevel, true);
+                if (bossSpawnedThisNight)
+                {
+                    ShowBossWarning();
+                }
             }
 
             if (spawnedThisNight >= nightSpawnLimit || activeEnemies.Count >= nightMaxAlive)
@@ -177,6 +183,7 @@ namespace Game.Combat
             }
 
             ReturnAllEnemies();
+            HideBossWarning();
             nightActive = enemyPool != null && mainTower != null && mainTower.Health != null;
             spawnedThisNight = 0;
             nightSpawnLimit = GetSpawnLimitForThreat(
@@ -195,6 +202,7 @@ namespace Game.Combat
         public void EndNight()
         {
             nightActive = false;
+            HideBossWarning();
             ReturnAllEnemies();
         }
 
@@ -429,6 +437,37 @@ namespace Game.Combat
             releaseBuffer.Clear();
         }
 
+        private void ShowBossWarning()
+        {
+            ResolveWarningFrame();
+            if (bossWarningFrame == null)
+            {
+                return;
+            }
+
+            bossWarningFrame.SetActive(true);
+            CancelInvoke(nameof(HideBossWarning));
+            Invoke(nameof(HideBossWarning), 5f);
+        }
+
+        private void HideBossWarning()
+        {
+            CancelInvoke(nameof(HideBossWarning));
+            ResolveWarningFrame();
+            if (bossWarningFrame != null)
+            {
+                bossWarningFrame.SetActive(false);
+            }
+        }
+
+        private void ResolveWarningFrame()
+        {
+            if (bossWarningFrame == null)
+            {
+                bossWarningFrame = GameObject.Find("Canvas/WarnTextFrame");
+            }
+        }
+
         private void OnDayNightStateChanged(DayNightStateChanged state)
         {
             if (state.Phase == DayNightPhase.Night)
@@ -457,6 +496,8 @@ namespace Game.Combat
             {
                 mainTower = FindObjectOfType<MainTower>();
             }
+
+            ResolveWarningFrame();
         }
 
         private void SubscribeToTowerDeath()
