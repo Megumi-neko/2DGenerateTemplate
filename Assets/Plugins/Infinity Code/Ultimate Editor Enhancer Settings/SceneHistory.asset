@@ -15,6 +15,8 @@ MonoBehaviour:
   _items:
   - name: Stage 4
     path: Assets/Scenes/Stage 4.unity
+  - name: Stage
+    path: Assets/Scenes/Stage.unity
   - name: Stage 2
     path: Assets/Scenes/Stage 2.unity
   - name: MainMenu
@@ -23,8 +25,6 @@ MonoBehaviour:
     path: Assets/Scenes/LightingDemo.unity
   - name: SampleScene
     path: Assets/Scenes/SampleScene.unity
-  - name: Stage
-    path: Assets/Scenes/Stage.unity
   - name: Stage 3
     path: Assets/Scenes/Stage 3.unity
   - name: Stage 1

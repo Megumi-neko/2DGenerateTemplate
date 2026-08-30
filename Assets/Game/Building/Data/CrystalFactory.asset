@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11223344556677889900aabbccddeeff, type: 3}
+  m_Name: CrystalFactory
+  m_EditorClassIdentifier: 
+  buildingId: crystal_factory
+  displayName: "\u7ED3\u6676\u5DE5\u5382"
+  prefab: {fileID: 5216215404874160765, guid: e17a4c9d6b3f5e7a8c2d1f0b4a6e9c83, type: 3}
+  footprint: {x: 2, y: 2}
+  coinCost: 15
+  canBuildDuringDay: 1
+  maxHealth: 150
+  emitsNightLight: 0
+  lightRadius: 0.01
+  lightIntensity: 0
+  lightDamagePerSecond: 0
+  lightDamageCap: 0
+  generatesCoins: 1
+  coinProductionAtNightOnly: 1
+  coinProductionAmount: 5
+  coinProductionInterval: 10

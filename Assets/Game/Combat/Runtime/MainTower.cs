@@ -1,3 +1,4 @@
+using Game.BaseSystem;
 using UnityEngine;
 
 namespace Game.Combat
@@ -44,7 +45,18 @@ namespace Game.Combat
         private void Awake()
         {
             health = GetComponent<Health>();
+            health.Damaged += OnDamaged;
             ApplyLevel(true);
+        }
+
+        private void OnDestroy()
+        {
+            if (health != null) health.Damaged -= OnDamaged;
+        }
+
+        private void OnDamaged(Health _, float amount)
+        {
+            if (amount > 0f) CameraShakeController.ShakeMainCamera();
         }
 
         private void Update()

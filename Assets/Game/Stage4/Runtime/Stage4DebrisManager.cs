@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Game.Building;
 using Game.Combat;
@@ -23,7 +24,9 @@ namespace Game.Stage4
         [Header("Spawn")]
         [SerializeField] private Vector2 spawnAreaCenter;
         [SerializeField] private Vector2 spawnAreaSize = new Vector2(24f, 14f);
-        [SerializeField, Min(0)] private int debrisPerNight = 5;
+        [SerializeField, Min(0)] private int minimumDebrisPerNight = 2;
+        [SerializeField, Min(0)] private int maximumDebrisPerNight = 5;
+        [SerializeField, Min(0f)] private float respawnDelay = 2f;
         [SerializeField, Min(1)] private int maximumActiveDebris = 12;
         [SerializeField, Min(1)] private int spawnAttemptsPerDebris = 30;
         [SerializeField, Min(0.1f)] private float minimumDistanceFromTower = 2f;
@@ -56,12 +59,20 @@ namespace Game.Stage4
 
         private void Start()
         {
-            if (dayNightSystem != null && dayNightSystem.CurrentPhase == DayNightPhase.Night) BeginNight();
+            if (dayNightSystem != null && dayNightSystem.CurrentPhase == DayNightPhase.Night)
+            {
+                BeginNight();
+            }
+            else
+            {
+                ClearSpawned();
+            }
         }
 
         private void OnDisable()
         {
             EventBus.Instance.UnSubscribe<DayNightStateChanged>(OnDayNightStateChanged);
+            StopAllCoroutines();
             ClearSpawned();
             nightActive = false;
         }
@@ -75,26 +86,48 @@ namespace Game.Stage4
         private void OnDayNightStateChanged(DayNightStateChanged state)
         {
             if (state.Phase == DayNightPhase.Night) BeginNight();
-            else { nightActive = false; ClearSpawned(); }
+            else
+            {
+                nightActive = false;
+                StopAllCoroutines();
+                ClearSpawned();
+            }
         }
 
         public void BeginNight()
         {
+            StopAllCoroutines();
             nightActive = true;
             ClearSpawned();
-            int count = Mathf.Min(debrisPerNight, maximumActiveDebris);
+            int minimumCount = Mathf.Max(0, minimumDebrisPerNight);
+            int maximumCount = Mathf.Max(minimumCount, maximumDebrisPerNight);
+            int count = Mathf.Min(
+                Random.Range(minimumCount, maximumCount + 1),
+                maximumActiveDebris);
             for (int i = 0; i < count; i++)
             {
-                if (TryGetDarkPosition(out Vector3 position)) Spawn(position);
+                if (TryGetRingPosition(out Vector3 position)) Spawn(position);
             }
         }
 
-        private bool TryGetDarkPosition(out Vector3 position)
+        private bool TryGetRingPosition(out Vector3 position)
         {
-            Vector2 half = spawnAreaSize * 0.5f;
+            GetLightRing(out Vector2 center, out float innerRadius, out float outerRadius);
+            if (outerRadius <= innerRadius + 0.01f)
+            {
+                position = default;
+                return false;
+            }
+
             for (int attempt = 0; attempt < spawnAttemptsPerDebris; attempt++)
             {
-                Vector2 candidate = spawnAreaCenter + new Vector2(Random.Range(-half.x, half.x), Random.Range(-half.y, half.y));
+                float radiusSquared = Random.Range(
+                    innerRadius * innerRadius,
+                    outerRadius * outerRadius);
+                float radius = Mathf.Sqrt(radiusSquared);
+                float angle = Random.Range(0f, Mathf.PI * 2f);
+                Vector2 candidate = center + new Vector2(
+                    Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
                 if (mainTower != null && Vector2.Distance(candidate, mainTower.transform.position) < minimumDistanceFromTower) continue;
                 bool tooClose = false;
                 for (int i = 0; i < spawned.Count; i++)
@@ -107,14 +140,50 @@ namespace Game.Stage4
             return false;
         }
 
+        private void GetLightRing(out Vector2 center, out float innerRadius, out float outerRadius)
+        {
+            LightEmitter2D outerEmitter = IlluminationSystem.GetLongestSectorEmitter(true);
+            if (outerEmitter == null)
+            {
+                center = spawnAreaCenter;
+                innerRadius = 0f;
+                outerRadius = Mathf.Min(spawnAreaSize.x, spawnAreaSize.y) * 0.5f;
+                return;
+            }
+
+            center = outerEmitter.WorldPosition;
+            outerRadius = Mathf.Max(0.01f, outerEmitter.MaximumEffectiveRange);
+            InnerCircleLight2D innerCircle = outerEmitter.GetComponent<InnerCircleLight2D>();
+            innerRadius = innerCircle == null
+                ? 0f
+                : Mathf.Clamp(innerCircle.InnerRadius, 0f, outerRadius);
+        }
+
         private void Spawn(Vector3 position)
         {
             GameObject instance = debrisPrefab == null ? new GameObject("Stage 4 Debris") : Instantiate(debrisPrefab, position, Quaternion.identity, debrisRoot);
             if (debrisPrefab == null) { instance.transform.SetParent(debrisRoot, false); instance.transform.position = position; }
             Stage4Debris debris = instance.GetComponent<Stage4Debris>();
             if (debris == null) debris = instance.AddComponent<Stage4Debris>();
-            debris.Initialize(debrisSprite, coinInventory, repairRequired, repairRatePerIntensity, repairReward, progressBarOffset, progressBarSize);
+            debris.Initialize(debrisSprite, coinInventory, repairRequired, repairRatePerIntensity,
+                repairReward, progressBarOffset, progressBarSize, OnDebrisCompleted);
             spawned.Add(debris);
+        }
+
+        private void OnDebrisCompleted(Stage4Debris debris)
+        {
+            spawned.Remove(debris);
+            if (nightActive && spawned.Count < maximumActiveDebris)
+            {
+                StartCoroutine(RespawnDebrisAfterDelay());
+            }
+        }
+
+        private IEnumerator RespawnDebrisAfterDelay()
+        {
+            yield return new WaitForSeconds(Mathf.Max(0f, respawnDelay));
+            if (!nightActive || spawned.Count >= maximumActiveDebris) yield break;
+            if (TryGetRingPosition(out Vector3 position)) Spawn(position);
         }
 
         private void ClearSpawned()
@@ -127,7 +196,9 @@ namespace Game.Stage4
         {
             spawnAreaSize.x = Mathf.Max(0.1f, spawnAreaSize.x);
             spawnAreaSize.y = Mathf.Max(0.1f, spawnAreaSize.y);
-            debrisPerNight = Mathf.Max(0, debrisPerNight);
+            minimumDebrisPerNight = Mathf.Max(0, minimumDebrisPerNight);
+            maximumDebrisPerNight = Mathf.Max(minimumDebrisPerNight, maximumDebrisPerNight);
+            respawnDelay = Mathf.Max(0f, respawnDelay);
             maximumActiveDebris = Mathf.Max(1, maximumActiveDebris);
             spawnAttemptsPerDebris = Mathf.Max(1, spawnAttemptsPerDebris);
             minimumDistanceFromTower = Mathf.Max(0.1f, minimumDistanceFromTower);

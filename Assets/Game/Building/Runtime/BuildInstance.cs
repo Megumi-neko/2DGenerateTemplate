@@ -17,6 +17,7 @@ namespace Game.Building
 
         private CoinInventory coinInventory;
         private BuildingHealth buildingHealth;
+        private BuildingHealthBar healthBar;
         private LightEmitter2D lightEmitter;
         private float productionTimer;
 
@@ -27,6 +28,9 @@ namespace Game.Building
         {
             buildingHealth = GetComponent<BuildingHealth>();
             if (buildingHealth == null) buildingHealth = gameObject.AddComponent<BuildingHealth>();
+            healthBar = GetComponent<BuildingHealthBar>();
+            if (healthBar == null) healthBar = gameObject.AddComponent<BuildingHealthBar>();
+            healthBar.Initialize(buildingHealth);
             buildingHealth.Died += OnBuildingDied;
         }
 
@@ -60,6 +64,12 @@ namespace Game.Building
         }
 
         private void OnDayNightStateChanged(DayNightStateChanged state) { UpdateNightLight(); }
+        private bool IsNight()
+        {
+            DayNightSystem system = FindObjectOfType<DayNightSystem>();
+            return system == null || system.CurrentPhase == DayNightPhase.Night;
+        }
+
         private void OnBuildingDied(BuildingHealth _)
         {
             lightEmitter?.SetEmitting(false);
@@ -69,8 +79,13 @@ namespace Game.Building
         private void Update()
         {
             if (!isActiveAndEnabled || !IsInitialized || Definition == null ||
-                !Definition.GeneratesCoins || coinInventory == null)
+                !Definition.GeneratesCoins || coinInventory == null ||
+                Definition.CoinProductionAtNightOnly && !IsNight())
             {
+                if (Definition != null && Definition.CoinProductionAtNightOnly)
+                {
+                    productionTimer = 0f;
+                }
                 return;
             }
 
@@ -114,6 +129,9 @@ namespace Game.Building
             {
                 if (buildingHealth == null) buildingHealth = GetComponent<BuildingHealth>();
                 buildingHealth?.ResetHealth(definition.MaxHealth);
+                healthBar?.SetOffset(definition.BuildingId == "crystal_factory"
+                    ? new Vector3(-0.02f, 1.1f, 0f)
+                    : new Vector3(0.06f, 1.1f, 0f));
                 UpdateNightLight();
             }
         }

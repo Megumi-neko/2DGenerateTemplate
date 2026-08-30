@@ -156,6 +156,12 @@ namespace Game.UI
             activeBgm = null;
         }
 
+        public void RebindButtons()
+        {
+            UnbindButtons();
+            BindButtons();
+        }
+
         private void BindButtons()
         {
             if (buttonsBound || stageUIController == null)
@@ -173,7 +179,9 @@ namespace Game.UI
 
                 if (button.name == "IntensityUp" ||
                     button.name == "LengthUp" ||
-                    button.name == "BuidLookout")
+                    button.name == "BuidLookout" ||
+                    button.name == "BuildCrystalFactory" ||
+                    button.name == "BuidFactory")
                 {
                     AddSfxListener(button, purchaseSound);
                 }

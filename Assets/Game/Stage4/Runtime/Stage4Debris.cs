@@ -1,3 +1,4 @@
+using System;
 using Game.Building;
 using Game.Lighting;
 using UnityEngine;
@@ -10,6 +11,7 @@ namespace Game.Stage4
     {
         private SpriteRenderer spriteRenderer;
         private Slider progress;
+        private Image progressFill;
         private GameObject progressRoot;
         private LightEmitter2D revealEmitter;
         private CoinInventory coins;
@@ -19,12 +21,14 @@ namespace Game.Stage4
         private bool rewarded;
         private float repaired;
         private float required;
+        private Action<Stage4Debris> completed;
 
         public bool IsRevealed => revealed;
         public float Repair01 => required <= 0f ? 1f : Mathf.Clamp01(repaired / required);
 
         public void Initialize(Sprite sprite, CoinInventory inventory, float repairRequired,
-            float repairRatePerIntensity, int coinReward, Vector3 barOffset, Vector2 barSize)
+            float repairRatePerIntensity, int coinReward, Vector3 barOffset, Vector2 barSize,
+            Action<Stage4Debris> onCompleted = null)
         {
             spriteRenderer = GetComponent<SpriteRenderer>();
             if (spriteRenderer == null) spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
@@ -35,6 +39,7 @@ namespace Game.Stage4
             required = Mathf.Max(0.01f, repairRequired);
             repairRate = Mathf.Max(0f, repairRatePerIntensity);
             reward = Mathf.Max(0, coinReward);
+            completed = onCompleted;
             CreateProgressBar(barOffset, barSize);
         }
 
@@ -56,6 +61,7 @@ namespace Game.Stage4
             IlluminationSample sample = IlluminationSystem.Sample(transform.position);
             float persistentLightIntensity = revealEmitter == null ? 0f : revealEmitter.CurrentIntensity;
             float repairIntensity = Mathf.Max(0f, sample.Intensity - persistentLightIntensity);
+            UpdateProgressColor(repairIntensity, sample.StrongestSource, revealEmitter);
             if (sample.IsLit && repairIntensity > 0.0001f && repairRate > 0f)
             {
                 repaired += repairIntensity * repairRate * Time.deltaTime;
@@ -64,11 +70,31 @@ namespace Game.Stage4
             }
         }
 
+        private void UpdateProgressColor(
+            float intensity,
+            LightEmitter2D strongestSource,
+            LightEmitter2D persistentEmitter)
+        {
+            if (progressFill == null) return;
+            Color green = new Color(0.2f, 1f, 0.35f, 0.95f);
+            Color blue = new Color(0.1f, 0.4f, 1f, 0.98f);
+            if (strongestSource == null || strongestSource == persistentEmitter || intensity <= 0.0001f)
+            {
+                progressFill.color = green;
+                return;
+            }
+
+            float maximumIntensity = strongestSource.BaseIntensity * strongestSource.MaximumFocusMultiplier;
+            float normalizedIntensity = intensity / Mathf.Max(0.01f, maximumIntensity);
+            progressFill.color = Color.Lerp(green, blue, Mathf.Clamp01(normalizedIntensity));
+        }
+
         private void Complete()
         {
             if (rewarded) return;
             rewarded = true;
             coins?.Add(reward);
+            completed?.Invoke(this);
             Destroy(gameObject);
         }
 
@@ -99,7 +125,9 @@ namespace Game.Stage4
             fillRect.anchorMax = Vector2.one;
             fillRect.offsetMin = Vector2.zero;
             fillRect.offsetMax = Vector2.zero;
-            fill.GetComponent<Image>().color = new Color(0.2f, 1f, 0.35f, 0.95f);
+            Image fillImage = fill.GetComponent<Image>();
+            progressFill = fillImage;
+            fillImage.color = new Color(0.2f, 1f, 0.35f, 0.95f);
             progress.fillRect = fillRect;
         }
     }

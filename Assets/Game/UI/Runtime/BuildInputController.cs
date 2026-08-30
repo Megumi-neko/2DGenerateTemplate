@@ -15,11 +15,14 @@ namespace Game.UI
         [SerializeField] private BuildAreaGridPreview areaGridPreview;
         [SerializeField] private BuildFootprintPreview footprintPreview;
         [SerializeField] private BuildDefinition lookoutTower;
+        [SerializeField] private BuildDefinition crystalFactory;
         [SerializeField] private Camera targetCamera;
         [SerializeField] private BuildPlacementCameraController placementCameraController;
         [SerializeField] private StageUIController stageUIController;
 
         private Button lookoutTowerButton;
+        [SerializeField] private Button crystalFactoryButton;
+        private BuildDefinition selectedDefinition;
         private Vector3Int currentCellPosition;
         private bool isPlacing;
         private bool skipPointerClick;
@@ -28,11 +31,22 @@ namespace Game.UI
         {
             ResolveReferences();
             ConfigureLookoutTowerButton();
+            ConfigureCrystalFactoryButton();
         }
 
         private void OnEnable()
         {
             EventBus.Instance.Subscribe<DayNightStateChanged>(OnDayNightStateChanged);
+            ResolveReferences();
+            ConfigureLookoutTowerButton();
+            ConfigureCrystalFactoryButton();
+        }
+
+        private void Start()
+        {
+            ResolveReferences();
+            ConfigureLookoutTowerButton();
+            ConfigureCrystalFactoryButton();
         }
 
         private void OnDisable()
@@ -70,21 +84,22 @@ namespace Game.UI
             }
 
             currentCellPosition = buildSystem.WorldToCell(worldPosition);
+            BuildDefinition definition = selectedDefinition == null ? lookoutTower : selectedDefinition;
             BuildPlacementResult result = buildSystem.ValidatePlacement(
-                lookoutTower,
+                definition,
                 currentCellPosition);
             if (buildPreview != null)
             {
                 buildPreview.Show(
-                    lookoutTower,
-                    buildSystem.CellToWorld(currentCellPosition, lookoutTower),
+                    definition,
+                    buildSystem.CellToWorld(currentCellPosition, definition),
                     result.IsValid);
             }
             if (footprintPreview != null)
             {
                 footprintPreview.Show(
                     currentCellPosition,
-                    lookoutTower.Footprint,
+                    definition.Footprint,
                     result);
             }
 
@@ -93,7 +108,7 @@ namespace Game.UI
                 !IsPointerOverUi() &&
                 result.IsValid)
             {
-                if (buildSystem.TryPlace(lookoutTower, currentCellPosition))
+                if (buildSystem.TryPlace(definition, currentCellPosition))
                 {
                     CancelPlacement();
                 }
@@ -102,8 +117,18 @@ namespace Game.UI
 
         public void BeginLookoutTowerPlacement()
         {
+            BeginPlacement(lookoutTower);
+        }
+
+        public void BeginCrystalFactoryPlacement()
+        {
+            BeginPlacement(crystalFactory);
+        }
+
+        private void BeginPlacement(BuildDefinition definition)
+        {
             ResolveReferences();
-            if (buildSystem == null || lookoutTower == null || buildPreview == null ||
+            if (definition == null || buildSystem == null || buildPreview == null ||
                 targetCamera == null)
             {
                 Debug.LogWarning(
@@ -114,13 +139,14 @@ namespace Game.UI
             }
 
             if (buildSystem.ValidatePlacement(
-                    lookoutTower,
+                    definition,
                     buildSystem.WorldToCell(transform.position)).Reason ==
                 BuildPlacementFailureReason.WrongPhase)
             {
                 return;
             }
 
+            selectedDefinition = definition;
             isPlacing = true;
             skipPointerClick = true;
             if (placementCameraController != null &&
@@ -145,6 +171,7 @@ namespace Game.UI
         {
             isPlacing = false;
             skipPointerClick = false;
+            selectedDefinition = null;
             if (buildPreview != null)
             {
                 buildPreview.Hide();
@@ -222,7 +249,9 @@ namespace Game.UI
                 return;
             }
 
-            Transform buttonTransform = stageUIController.ConstructPanel.transform.Find("BuidLookout");
+            Transform buttonTransform = FindChildByName(
+                stageUIController.ConstructPanel.transform,
+                "BuidLookout");
             lookoutTowerButton = buttonTransform == null
                 ? null
                 : buttonTransform.GetComponent<Button>();
@@ -239,6 +268,50 @@ namespace Game.UI
             lookoutTowerButton.onClick.AddListener(BeginLookoutTowerPlacement);
         }
 
+        private void ConfigureCrystalFactoryButton()
+        {
+            if (crystalFactory == null || crystalFactoryButton == null &&
+                (stageUIController == null || stageUIController.ConstructPanel == null))
+            {
+                return;
+            }
+
+            Transform buttonTransform = crystalFactoryButton == null
+                ? FindChildByName(
+                    stageUIController.ConstructPanel.transform,
+                    "BuidFactory")
+                : crystalFactoryButton.transform;
+            if (buttonTransform == null)
+            {
+                Button[] buttons = FindObjectsOfType<Button>(true);
+                for (int i = 0; i < buttons.Length; i++)
+                {
+                    if (buttons[i] != null && buttons[i].name == "BuidFactory")
+                    {
+                        buttonTransform = buttons[i].transform;
+                        break;
+                    }
+                }
+            }
+            if (buttonTransform == null)
+            {
+                Debug.LogWarning(
+                    $"[{nameof(BuildInputController)}] The authored BuidFactory button " +
+                    "could not be found in the ConstructPanel.",
+                    this);
+                return;
+            }
+
+            crystalFactoryButton = buttonTransform.GetComponent<Button>();
+            if (crystalFactoryButton == null) return;
+            crystalFactoryButton.onClick.RemoveListener(BeginLookoutTowerPlacement);
+            crystalFactoryButton.onClick.RemoveListener(BeginCrystalFactoryPlacement);
+            crystalFactoryButton.onClick.AddListener(BeginCrystalFactoryPlacement);
+            Text label = crystalFactoryButton.GetComponentInChildren<Text>(true);
+            if (label != null) label.text = $"{crystalFactory.DisplayName}\n{crystalFactory.CoinCost}";
+            FindObjectOfType<StageAudioController>()?.RebindButtons();
+        }
+
         private void RefreshLookoutTowerLabel()
         {
             if (lookoutTowerButton == null || lookoutTower == null)
@@ -251,6 +324,20 @@ namespace Game.UI
             {
                 label.text = $"{lookoutTower.DisplayName}\n{lookoutTower.CoinCost}";
             }
+        }
+
+        private static Transform FindChildByName(Transform root, string objectName)
+        {
+            if (root == null) return null;
+            Transform[] children = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < children.Length; i++)
+            {
+                if (children[i] != null && children[i].name == objectName)
+                {
+                    return children[i];
+                }
+            }
+            return null;
         }
 
         private bool TryGetPointerWorldPosition(out Vector3 worldPosition)

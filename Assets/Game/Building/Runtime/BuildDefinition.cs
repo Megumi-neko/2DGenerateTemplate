@@ -25,6 +25,7 @@ namespace Game.Building
 
         [Header("Economy")]
         [SerializeField] private bool generatesCoins;
+        [SerializeField] private bool coinProductionAtNightOnly;
         [SerializeField, Min(1)] private int coinProductionAmount = 1;
         [SerializeField, Min(0.1f)] private float coinProductionInterval = 10f;
 
@@ -41,6 +42,7 @@ namespace Game.Building
         public float LightDamagePerSecond => lightDamagePerSecond;
         public float LightDamageCap => lightDamageCap;
         public bool GeneratesCoins => generatesCoins;
+        public bool CoinProductionAtNightOnly => coinProductionAtNightOnly;
         public int CoinProductionAmount => coinProductionAmount;
         public float CoinProductionInterval => coinProductionInterval;
 
