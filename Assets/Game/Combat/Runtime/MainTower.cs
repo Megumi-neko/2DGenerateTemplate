@@ -56,7 +56,11 @@ namespace Game.Combat
 
         private void OnDamaged(Health _, float amount)
         {
-            if (amount > 0f) CameraShakeController.ShakeMainCamera();
+            if (amount > 0f)
+            {
+                CameraShakeController.ShakeMainCamera();
+                CandleHitFlash.FlashMainCandle();
+            }
         }
 
         private void Update()
