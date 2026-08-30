@@ -8,8 +8,9 @@ namespace Game.Combat
     {
         [SerializeField] private Text text;
         [SerializeField] private CanvasGroup canvasGroup;
-        [SerializeField, Min(0f)] private float mergeWindow = 0.12f;
-        [SerializeField, Min(0.01f)] private float visibleDuration = 0.65f;
+        [Tooltip("同一目标在这段时间内再次受伤时，伤害数字会累加而不是新建跳字。")]
+        [SerializeField, Min(0f)] private float mergeWindow = 1.25f;
+        [SerializeField, Min(0.01f)] private float visibleDuration = 1.5f;
         [SerializeField, Min(0f)] private float riseDistance = 0.6f;
         [SerializeField, Min(0.01f)] private float startScale = 1.2f;
         [SerializeField] private Color startDamageColor = new Color(1f, 0.65f, 0.65f, 1f);
@@ -179,7 +180,7 @@ namespace Game.Combat
         private void OnValidate()
         {
             mergeWindow = Mathf.Max(0f, mergeWindow);
-            visibleDuration = Mathf.Max(0.01f, visibleDuration);
+            visibleDuration = Mathf.Max(0.01f, mergeWindow, visibleDuration);
             riseDistance = Mathf.Max(0f, riseDistance);
             startScale = Mathf.Max(0.01f, startScale);
             redApproachDamage = Mathf.Max(0.01f, redApproachDamage);

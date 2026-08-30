@@ -119,8 +119,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   text: {fileID: 0}
   canvasGroup: {fileID: 0}
-  mergeWindow: 0.12
-  visibleDuration: 0.65
+  mergeWindow: 1.25
+  visibleDuration: 1.5
   riseDistance: 0.6
   startScale: 1.2
   startDamageColor: {r: 1, g: 0.65, b: 0.65, a: 1}
@@ -357,8 +357,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackRange: 0.75
   attackInterval: 1
-  illuminationSampleInterval: 0.1
+  illuminationDamageInterval: 0.5
   minimumSectorSpeedMultiplier: 0.5
+  animator: {fileID: 0}
+  walkAnimationState: GhostWalk
+  deathAnimationState: GhostBoom
+  deathAnimationDuration: 1.35
   visualRoot: {fileID: 0}
   visual: {fileID: 0}
   bossColor: {r: 1, g: 0.25, b: 0.2, a: 1}

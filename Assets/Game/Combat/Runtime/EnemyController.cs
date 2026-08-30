@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Game.Lighting;
 using Game.Building;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game.Combat
 {
@@ -18,7 +19,9 @@ namespace Game.Combat
         [Header("Combat")]
         [SerializeField, Min(0.01f)] private float attackRange = 0.75f;
         [SerializeField, Min(0.05f)] private float attackInterval = 1f;
-        [SerializeField, Min(0.02f)] private float illuminationSampleInterval = 0.1f;
+        [Tooltip("光照伤害的触发间隔（秒）。敌人每隔该时间结算一次光照伤害，而不是每帧造成伤害。")]
+        [FormerlySerializedAs("illuminationSampleInterval")]
+        [SerializeField, Min(0.02f)] private float illuminationDamageInterval = 0.1f;
         [SerializeField, Range(0.01f, 1f)] private float minimumSectorSpeedMultiplier = 0.5f;
 
         [Header("Visual")]
@@ -46,7 +49,8 @@ namespace Game.Combat
         private float moveSpeed;
         private float attackDamage;
         private float attackCooldown;
-        private float illuminationAccumulator;        private Vector3 baseScale;
+        private Coroutine illuminationDamageRoutine;
+        private Vector3 baseScale;
         private Vector3 visualBaseScale;
         private Color baseColor = Color.white;
         [SerializeField] private bool faceCamera = true;
@@ -103,6 +107,7 @@ private void Awake()
 
         private void OnDisable()
         {
+            StopIlluminationDamageRoutine();
             ActiveEnemiesInternal.Remove(this);
         }
 
@@ -152,7 +157,6 @@ private void Awake()
                 return;
             }
 
-            ApplyIlluminationDamage(Time.deltaTime);
             if (!IsAlive)
             {
                 return;
@@ -222,13 +226,14 @@ target = targetHealth;
             moveSpeed = Mathf.Max(0f, stats.MoveSpeed);
             attackDamage = Mathf.Max(0f, stats.AttackDamage * Mathf.Max(0f, attackMultiplier));
             attackCooldown = attackInterval;
-            illuminationAccumulator = 0f;
+            StopIlluminationDamageRoutine();
             releaseRequested = onReleaseRequested;
             coinReward = Mathf.Max(0, reward);
             rewardGranted = false;
             isSpawned = true;
 
             health.ResetHealth(stats.MaxHealth * Mathf.Max(0.01f, healthMultiplier));
+            illuminationDamageRoutine = StartCoroutine(IlluminationDamageRoutine());
             float scaleMultiplier = GetScaleMultiplier(
                 ThreatLevel,
                 boss,
@@ -363,25 +368,40 @@ public void RequestRelease()
             return Mathf.Clamp(minimumSectorSpeedMultiplier, 0.01f, 1f);
         }
 
-        private void ApplyIlluminationDamage(float deltaTime)
+        private IEnumerator IlluminationDamageRoutine()
         {
-            illuminationAccumulator += deltaTime;
-            if (illuminationAccumulator < illuminationSampleInterval)
+            while (IsAlive)
+            {
+                yield return new WaitForSeconds(illuminationDamageInterval);
+                if (!IsAlive)
+                {
+                    yield break;
+                }
+
+                float damagePerSecond = IlluminationSystem.GetDamagePerSecond(WorldPosition);
+                if (damagePerSecond > 0f)
+                {
+                    health.TakeDamage(damagePerSecond * illuminationDamageInterval);
+                }
+            }
+
+            illuminationDamageRoutine = null;
+        }
+
+        private void StopIlluminationDamageRoutine()
+        {
+            if (illuminationDamageRoutine == null)
             {
                 return;
             }
 
-            float sampleDuration = illuminationAccumulator;
-            illuminationAccumulator = 0f;
-            float damagePerSecond = IlluminationSystem.GetDamagePerSecond(WorldPosition);
-            if (damagePerSecond > 0f)
-            {
-                health.TakeDamage(damagePerSecond * sampleDuration);
-            }
+            StopCoroutine(illuminationDamageRoutine);
+            illuminationDamageRoutine = null;
         }
 
 private void OnDied(Health _)
         {
+            StopIlluminationDamageRoutine();
             if (!rewardGranted)
             {
                 rewardGranted = true;
@@ -454,7 +474,7 @@ private void OnValidate()
         {
             attackRange = Mathf.Max(0.01f, attackRange);
             attackInterval = Mathf.Max(0.05f, attackInterval);
-            illuminationSampleInterval = Mathf.Max(0.02f, illuminationSampleInterval);
+            illuminationDamageInterval = Mathf.Max(0.02f, illuminationDamageInterval);
             minimumSectorSpeedMultiplier = Mathf.Clamp(minimumSectorSpeedMultiplier, 0.01f, 1f);
             bossScaleMultiplier = Mathf.Max(1f, bossScaleMultiplier);
             baseScaleMultiplier = Mathf.Max(1f, baseScaleMultiplier);
