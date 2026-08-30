@@ -24800,8 +24800,7 @@ MonoBehaviour:
   intensityLevelText: {fileID: 0}
   rangeLevelText: {fileID: 0}
   stageLightingBootstrap: {fileID: 1388045010}
-  baseIntensityUpgradeCost: 2
-  baseRangeUpgradeCost: 2
+  mainTower: {fileID: 7400001000000009}
   mainTowerHealth: {fileID: 7400001000000010}
   healthBarFill: {fileID: 1464993965}
   healthPoint: {fileID: 667697538}
@@ -157138,10 +157137,10 @@ MonoBehaviour:
   edgeSoftness: 0.35
   innerRadiusMultiplier: 0.5
   maximumRangeUpgradeLevel: 10
-  rangeUpgradeAmount: 1
-  maximumIntensityUpgradeLevel: 3
-  intensityUpgradeAmount: 0.25
-  damageUpgradeAmount: 3
+  rangeUpgradeAmount: 0.25
+  maximumIntensityUpgradeLevel: 10
+  intensityUpgradeAmount: 0.075
+  damageUpgradeAmount: 0.9
   rangeUpgradeKey: 49
   intensityUpgradeKey: 50
   candleVisualPrefab: {fileID: 0}
@@ -159462,7 +159461,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1466794798
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -175230,8 +175229,8 @@ MonoBehaviour:
   initialThreatLevel: 2
   spawnInterval: 2
   firstSpawnDelay: 1
-  maxAlive: 20
-  maxSpawnedPerNight: 60
+  maxAlive: 16
+  maxSpawnedPerNight: 36
   spawnCountThreatMultiplier: 1.8
   spawnCountThreatExponent: 1.35
   aliveThreatMultiplier: 1.5
@@ -175245,8 +175244,8 @@ MonoBehaviour:
   spawnVerticalJitter: 1
   prewarmCount: 8
   poolCapacity: 40
-  bossHealthMultiplier: 4
-  bossAttackMultiplier: 1.75
+  bossHealthMultiplier: 4.5
+  bossAttackMultiplier: 1.8
   bossCoinRewardMultiplier: 2
 --- !u!4 &2100490230
 Transform:
@@ -177169,17 +177168,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60400d0acf705fc40939847d3db4cf79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  level: 1
-  maximumLevel: 6
-  upgradeBaseCost: 25
-  upgradeCostPerLevel: 15
-  coinInventory: {fileID: 3100000004}
+  qualityUpgradeLevel: 0
+  rangeUpgradeLevel: 0
+  maximumUpgradeLevel: 10
+  upgradeCosts: 140000001e0000002d000000410000005a000000780000009b000000c3000000f000000022010000
   baseMaxHealth: 500
-  healthPerLevel: 100
+  maxHealthPerQualityLevel: 70
   baseAttackDamage: 15
-  attackDamagePerLevel: 5
+  attackDamagePerQualityLevel: 3
   baseAttackRange: 4
-  attackRangePerLevel: 0.75
+  attackRangePerLevel: 0.25
   attackInterval: 0.5
   attackOrigin: {fileID: 0}
 --- !u!114 &7400001000000010
@@ -177194,8 +177192,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 561d0ab309d0ffe4b8d5d6851b98bebc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
-  currentHealth: 100
+  maxHealth: 500
+  currentHealth: 500
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

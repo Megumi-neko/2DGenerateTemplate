@@ -1,4 +1,6 @@
+using System.Reflection;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace Game.Combat.Tests
@@ -20,7 +22,7 @@ namespace Game.Combat.Tests
         public void DefaultStats_IncreaseHealthAndAttackAcrossLevels()
         {
             EnemyLevelStats previous = EnemyStats.GetDefault(1);
-            Assert.That(previous.MaxHealth, Is.EqualTo(60f));
+            Assert.That(previous.MaxHealth, Is.EqualTo(90f));
             for (int level = 2; level <= EnemyStats.MaximumThreatLevel; level++)
             {
                 EnemyLevelStats current = EnemyStats.GetDefault(level);
@@ -95,6 +97,158 @@ namespace Game.Combat.Tests
             Assert.That(EnemySpawner.ShouldSpawnBoss(true, false, 0.5f), Is.True);
             Assert.That(EnemySpawner.ShouldSpawnBoss(true, true, 0.25f), Is.False);
             Assert.That(EnemySpawner.ShouldSpawnBoss(false, false, 0.25f), Is.False);
+        }
+
+        [Test]
+        public void MainTower_IndependentUpgradesChangeRealCombatStats()
+        {
+            GameObject towerObject = new GameObject("Main Tower Test");
+            Health health = towerObject.AddComponent<Health>();
+            MainTower tower = towerObject.AddComponent<MainTower>();
+
+            Assert.That(tower.AttackDamage, Is.EqualTo(15f));
+            Assert.That(tower.AttackRange, Is.EqualTo(4f));
+            Assert.That(health.MaxHealth, Is.EqualTo(500f));
+
+            health.TakeDamage(100f);
+            Assert.That(tower.UpgradeRange(), Is.True);
+            Assert.That(tower.RangeUpgradeLevel, Is.EqualTo(1));
+            Assert.That(tower.QualityUpgradeLevel, Is.Zero);
+            Assert.That(tower.AttackRange, Is.EqualTo(4.25f).Within(0.0001f));
+            Assert.That(tower.AttackDamage, Is.EqualTo(15f));
+
+            Assert.That(tower.UpgradeQuality(), Is.True);
+            Assert.That(tower.QualityUpgradeLevel, Is.EqualTo(1));
+            Assert.That(tower.AttackDamage, Is.EqualTo(18f));
+            Assert.That(health.MaxHealth, Is.EqualTo(570f));
+            Assert.That(health.CurrentHealth, Is.EqualTo(470f));
+
+            Object.DestroyImmediate(towerObject);
+        }
+
+        [Test]
+        public void MainTower_UpgradesStopAtTenLevels()
+        {
+            GameObject towerObject = new GameObject("Main Tower Upgrade Limit Test");
+            towerObject.AddComponent<Health>();
+            MainTower tower = towerObject.AddComponent<MainTower>();
+
+            for (int i = 0; i < 10; i++)
+            {
+                Assert.That(tower.UpgradeQuality(), Is.True);
+                Assert.That(tower.UpgradeRange(), Is.True);
+            }
+
+            Assert.That(tower.UpgradeQuality(), Is.False);
+            Assert.That(tower.UpgradeRange(), Is.False);
+            Assert.That(tower.QualityUpgradeLevel, Is.EqualTo(10));
+            Assert.That(tower.RangeUpgradeLevel, Is.EqualTo(10));
+            Assert.That(tower.AttackDamage, Is.EqualTo(45f));
+            Assert.That(tower.AttackRange, Is.EqualTo(6.5f).Within(0.0001f));
+            Assert.That(tower.Health.MaxHealth, Is.EqualTo(1200f));
+
+            Object.DestroyImmediate(towerObject);
+        }
+
+        [Test]
+        public void MainTower_AttackPathUsesCurrentAttackDamage()
+        {
+            GameObject towerObject = new GameObject("Main Tower Attack Test");
+            towerObject.AddComponent<Health>();
+            MainTower tower = towerObject.AddComponent<MainTower>();
+
+            GameObject enemyObject = new GameObject("Enemy Attack Target Test");
+            enemyObject.transform.position = towerObject.transform.position;
+            enemyObject.AddComponent<Health>();
+            EnemyController enemy = enemyObject.AddComponent<EnemyController>();
+            MethodInfo enemyAwake = typeof(EnemyController).GetMethod(
+                "Awake",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(enemyAwake, Is.Not.Null);
+            enemyAwake.Invoke(enemy, null);
+            enemy.Initialize(tower.Health, EnemyStats.GetDefault(1), 1, false, 1f, 1f, null);
+            float healthBefore = enemy.Health.CurrentHealth;
+
+            MethodInfo update = typeof(MainTower).GetMethod(
+                "Update",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(update, Is.Not.Null);
+            update.Invoke(tower, null);
+
+            Assert.That(
+                enemy.Health.CurrentHealth,
+                Is.EqualTo(healthBefore - tower.AttackDamage).Within(0.0001f));
+
+            Object.DestroyImmediate(enemyObject);
+            Object.DestroyImmediate(towerObject);
+        }
+
+        [Test]
+        public void MainTower_UpgradeCostsFollowConfiguredCurve()
+        {
+            int[] expectedCosts = { 20, 30, 45, 65, 90, 120, 155, 195, 240, 290 };
+            GameObject towerObject = new GameObject("Main Tower Cost Test");
+            towerObject.AddComponent<Health>();
+            MainTower tower = towerObject.AddComponent<MainTower>();
+
+            for (int i = 0; i < expectedCosts.Length; i++)
+            {
+                Assert.That(tower.NextQualityUpgradeCost, Is.EqualTo(expectedCosts[i]));
+                Assert.That(tower.NextRangeUpgradeCost, Is.EqualTo(expectedCosts[i]));
+                Assert.That(tower.UpgradeQuality(), Is.True);
+                Assert.That(tower.UpgradeRange(), Is.True);
+            }
+
+            Assert.That(tower.NextQualityUpgradeCost, Is.Zero);
+            Assert.That(tower.NextRangeUpgradeCost, Is.Zero);
+            Object.DestroyImmediate(towerObject);
+        }
+
+        [Test]
+        public void EnemyStatsAsset_MatchesRuntimeDefaults()
+        {
+            EnemyStats asset = AssetDatabase.LoadAssetAtPath<EnemyStats>(
+                "Assets/Game/Combat/Data/EnemyStats.asset");
+            Assert.That(asset, Is.Not.Null);
+
+            for (int level = EnemyStats.MinimumThreatLevel;
+                 level <= EnemyStats.MaximumThreatLevel;
+                 level++)
+            {
+                EnemyLevelStats expected = EnemyStats.GetDefault(level);
+                EnemyLevelStats actual = asset.Get(level);
+                Assert.That(actual.MaxHealth, Is.EqualTo(expected.MaxHealth));
+                Assert.That(actual.AttackDamage, Is.EqualTo(expected.AttackDamage));
+                Assert.That(actual.MoveSpeed, Is.EqualTo(expected.MoveSpeed));
+                Assert.That(actual.CoinReward, Is.EqualTo(expected.CoinReward));
+            }
+        }
+
+        [Test]
+        public void DefaultStats_UseRaisedHealthWithoutChangingAttack()
+        {
+            EnemyLevelStats levelOne = EnemyStats.GetDefault(1);
+            EnemyLevelStats levelSix = EnemyStats.GetDefault(6);
+
+            Assert.That(levelOne.MaxHealth, Is.EqualTo(90f));
+            Assert.That(levelSix.MaxHealth, Is.EqualTo(675f));
+            Assert.That(levelSix.AttackDamage, Is.EqualTo(25f));
+        }
+
+        [Test]
+        public void Health_IncreaseMaximumPreservesExistingDamage()
+        {
+            GameObject owner = new GameObject("Health Growth Test");
+            Health health = owner.AddComponent<Health>();
+            health.ResetHealth(500f);
+            health.TakeDamage(100f);
+
+            health.IncreaseMaximumHealth(570f);
+
+            Assert.That(health.MaxHealth, Is.EqualTo(570f));
+            Assert.That(health.CurrentHealth, Is.EqualTo(470f));
+            Assert.That(health.IsDead, Is.False);
+            Object.DestroyImmediate(owner);
         }
 
         [Test]

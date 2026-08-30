@@ -29,6 +29,7 @@
   <Project Path="Unity.VisualStudio.Editor.csproj" />
   <Project Path="Game.Lighting.Tests.csproj" />
   <Project Path="Unity.2D.Tilemap.Extras.Editor.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.Rider.Editor.csproj" />
   <Project Path="Unity.InternalAPIEditorBridge.001.csproj" />
   <Project Path="Unity.2D.SpriteShape.Runtime.csproj" />
@@ -37,7 +38,6 @@
   <Project Path="Unity.Burst.CodeGen.csproj" />
   <Project Path="Unity.CollabProxy.Editor.csproj" />
   <Project Path="Unity.2D.Tilemap.Extras.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.VisualScripting.State.csproj" />
   <Project Path="Game.Combat.Tests.csproj" />
   <Project Path="Unity.TextMeshPro.csproj" />
@@ -76,10 +76,10 @@
   <Project Path="Game.Lighting.Player.csproj" />
   <Project Path="Unity.Collections.Player.csproj" />
   <Project Path="Game.Building.Player.csproj" />
+  <Project Path="Assembly-CSharp.Player.csproj" />
   <Project Path="Unity.2D.SpriteShape.Runtime.Player.csproj" />
   <Project Path="Unity.2D.Animation.Runtime.Player.csproj" />
   <Project Path="Unity.2D.Tilemap.Extras.Player.csproj" />
-  <Project Path="Assembly-CSharp.Player.csproj" />
   <Project Path="Unity.VisualScripting.State.Player.csproj" />
   <Project Path="Unity.TextMeshPro.Player.csproj" />
   <Project Path="com.ccadori.vectorforestscenerydemo.Runtime.Player.csproj" />

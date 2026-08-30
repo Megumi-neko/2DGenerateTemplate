@@ -50,8 +50,7 @@ namespace Game.UI
         [SerializeField] private Text intensityLevelText;
         [SerializeField] private Text rangeLevelText;
         [SerializeField] private StageLightingBootstrap stageLightingBootstrap;
-        [SerializeField, Min(0)] private int baseIntensityUpgradeCost = 2;
-        [SerializeField, Min(0)] private int baseRangeUpgradeCost = 2;
+        [SerializeField] private MainTower mainTower;
 
         [Header("Health")]
         [SerializeField] private Health mainTowerHealth;
@@ -552,6 +551,11 @@ private void ResolveUpgradeButtons()
                 stageLightingBootstrap = FindObjectOfType<StageLightingBootstrap>();
             }
 
+            if (mainTower == null)
+            {
+                mainTower = FindObjectOfType<MainTower>();
+            }
+
             if (constructPanel == null)
             {
                 return;
@@ -590,64 +594,85 @@ private void ResolveUpgradeButtons()
             }
         }
 
-        private void OnIntensityUpgradeClicked()
+private void OnIntensityUpgradeClicked()
         {
-            if (stageLightingBootstrap != null &&
-                TrySpendUpgrade(baseIntensityUpgradeCost, stageLightingBootstrap.IntensityUpgradeLevel) &&
-                stageLightingBootstrap.UpgradeIntensity())
+            if (mainTower == null || !mainTower.CanUpgradeQuality)
             {
-                RefreshUpgradeButtons();
+                return;
             }
-        }
 
-        private void OnRangeUpgradeClicked()
-        {
-            if (stageLightingBootstrap != null &&
-                TrySpendUpgrade(baseRangeUpgradeCost, stageLightingBootstrap.RangeUpgradeLevel) &&
-                stageLightingBootstrap.UpgradeRange())
+            int cost = mainTower.NextQualityUpgradeCost;
+            if (coinInventory != null && !coinInventory.TrySpend(cost))
             {
-                RefreshUpgradeButtons();
+                return;
             }
+
+            if (!mainTower.UpgradeQuality())
+            {
+                if (coinInventory != null)
+                {
+                    coinInventory.Add(cost);
+                }
+                return;
+            }
+
+            if (stageLightingBootstrap != null && !stageLightingBootstrap.UpgradeIntensity())
+            {
+                Debug.LogWarning("Quality upgraded, but the matching lighting intensity upgrade failed.", this);
+            }
+            RefreshUpgradeButtons();
         }
 
-private bool TrySpendUpgrade(int baseCost, int level)
+private void OnRangeUpgradeClicked()
         {
-            return coinInventory == null || coinInventory.TrySpend(CalculateUpgradeCost(baseCost, level));
+            if (mainTower == null || !mainTower.CanUpgradeRange)
+            {
+                return;
+            }
+
+            int cost = mainTower.NextRangeUpgradeCost;
+            if (coinInventory != null && !coinInventory.TrySpend(cost))
+            {
+                return;
+            }
+
+            if (!mainTower.UpgradeRange())
+            {
+                if (coinInventory != null)
+                {
+                    coinInventory.Add(cost);
+                }
+                return;
+            }
+
+            if (stageLightingBootstrap != null && !stageLightingBootstrap.UpgradeRange())
+            {
+                Debug.LogWarning("Range upgraded, but the matching lighting range upgrade failed.", this);
+            }
+            RefreshUpgradeButtons();
         }
 
-        private static int CalculateUpgradeCost(int baseCost, int level)
+        private void RefreshUpgradeButtons()
         {
-            long cost = (long)Mathf.Max(0, baseCost) * (Mathf.Max(0, level) + 1);
-            return cost > int.MaxValue ? int.MaxValue : (int)cost;
-        }
-
-private void RefreshUpgradeButtons()
-        {
-            if (stageLightingBootstrap == null)
+            if (mainTower == null)
             {
                 return;
             }
 
             bool isDay = dayNightSystem == null || dayNightSystem.CurrentPhase == DayNightPhase.Day;
-            bool canUpgradeIntensity = stageLightingBootstrap.IntensityUpgradeLevel <
-                stageLightingBootstrap.MaximumIntensityUpgradeLevel;
-            bool canUpgradeRange = stageLightingBootstrap.RangeUpgradeLevel <
-                stageLightingBootstrap.MaximumRangeUpgradeLevel;
-            int intensityCost = CalculateUpgradeCost(
-                baseIntensityUpgradeCost,
-                stageLightingBootstrap.IntensityUpgradeLevel);
-            int rangeCost = CalculateUpgradeCost(
-                baseRangeUpgradeCost,
-                stageLightingBootstrap.RangeUpgradeLevel);
+            bool canUpgradeQuality = mainTower.CanUpgradeQuality;
+            bool canUpgradeRange = mainTower.CanUpgradeRange;
+            int qualityCost = mainTower.NextQualityUpgradeCost;
+            int rangeCost = mainTower.NextRangeUpgradeCost;
 
-            SetUpgradeLabel(intensityUpgradeText, "质量升级：", intensityCost, canUpgradeIntensity);
+            SetUpgradeLabel(intensityUpgradeText, "质量升级：", qualityCost, canUpgradeQuality);
             SetUpgradeLabel(rangeUpgradeText, "高度升级：", rangeCost, canUpgradeRange);
-            SetLevelLabel(intensityLevelText, stageLightingBootstrap.IntensityUpgradeLevel);
-            SetLevelLabel(rangeLevelText, stageLightingBootstrap.RangeUpgradeLevel);
-            SetInteractable(intensityUpgradeButton, isDay && canUpgradeIntensity &&
-                coinCount >= intensityCost);
+            SetLevelLabel(intensityLevelText, mainTower.QualityUpgradeLevel);
+            SetLevelLabel(rangeLevelText, mainTower.RangeUpgradeLevel);
+            SetInteractable(intensityUpgradeButton, isDay && canUpgradeQuality &&
+                (coinInventory == null || coinInventory.Coins >= qualityCost));
             SetInteractable(rangeUpgradeButton, isDay && canUpgradeRange &&
-                coinCount >= rangeCost);
+                (coinInventory == null || coinInventory.Coins >= rangeCost));
         }
 
         private static void SetLevelLabel(Text label, int level)

@@ -42,6 +42,16 @@ namespace Game.Combat
             Changed?.Invoke(this);
         }
 
+        public void IncreaseMaximumHealth(float newMaxHealth)
+        {
+            float previousMaxHealth = maxHealth;
+            float previousDamage = Mathf.Max(0f, previousMaxHealth - currentHealth);
+            maxHealth = SanitizeMaximum(newMaxHealth);
+            currentHealth = Mathf.Clamp(maxHealth - previousDamage, 0f, maxHealth);
+            isDead = currentHealth <= 0f;
+            Changed?.Invoke(this);
+        }
+
         public bool TakeDamage(float amount)
         {
             if (isDead || !IsFinite(amount) || amount <= 0f)

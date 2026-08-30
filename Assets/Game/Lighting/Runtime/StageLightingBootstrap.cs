@@ -31,11 +31,11 @@ namespace Game.Lighting
         [SerializeField, Range(0.01f, 0.99f)] private float innerRadiusMultiplier = 0.5f;
 
         [Header("Candle Upgrades")]
-        [SerializeField, Min(0)] private int maximumRangeUpgradeLevel = 3;
-        [SerializeField, Min(0f)] private float rangeUpgradeAmount = 1f;
-        [SerializeField, Min(0)] private int maximumIntensityUpgradeLevel = 3;
-        [SerializeField, Min(0f)] private float intensityUpgradeAmount = 0.25f;
-        [SerializeField, Min(0f)] private float damageUpgradeAmount = 3f;
+        [SerializeField, Min(0)] private int maximumRangeUpgradeLevel = 10;
+        [SerializeField, Min(0f)] private float rangeUpgradeAmount = 0.25f;
+        [SerializeField, Min(0)] private int maximumIntensityUpgradeLevel = 10;
+        [SerializeField, Min(0f)] private float intensityUpgradeAmount = 0.075f;
+        [SerializeField, Min(0f)] private float damageUpgradeAmount = 0.9f;
         [SerializeField] private KeyCode rangeUpgradeKey = KeyCode.Alpha1;
         [SerializeField] private KeyCode intensityUpgradeKey = KeyCode.Alpha2;
 
