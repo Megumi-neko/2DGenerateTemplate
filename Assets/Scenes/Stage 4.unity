@@ -176790,6 +176790,7 @@ GameObject:
   - component: {fileID: 3100000010}
   - component: {fileID: 3100000011}
   - component: {fileID: 3100000012}
+  - component: {fileID: 3100000020}
   m_Layer: 0
   m_Name: Building System
   m_TagString: Untagged
@@ -176991,6 +176992,21 @@ MonoBehaviour:
   buttonSound: {fileID: 8300000, guid: b410f5e7f28df1045b612685dcb8e0fb, type: 3}
   purchaseSound: {fileID: 8300000, guid: f69786cd2d9853e4abec740a4eeb8c48, type: 3}
   buildingPlacedSound: {fileID: 8300000, guid: 163cdde894bf6484e864eb774a3021f4, type: 3}
+--- !u!114 &3100000020
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8f4a2b6d1e7935a0c6b8e2f4a7d1c93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainTower: {fileID: 7400001000000009}
+  dayNightSystem: {fileID: 2100000003}
+  endSceneName: End
 --- !u!1 &8800002001
 GameObject:
   m_ObjectHideFlags: 0

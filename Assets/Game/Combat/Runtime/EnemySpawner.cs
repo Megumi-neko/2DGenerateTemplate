@@ -453,6 +453,11 @@ namespace Game.Combat
         private void HideBossWarning()
         {
             CancelInvoke(nameof(HideBossWarning));
+            if (!isActiveAndEnabled)
+            {
+                return;
+            }
+            ResolveWarningFrame();
             if (bossWarningFrame != null)
             {
                 bossWarningFrame.SetActive(false);
