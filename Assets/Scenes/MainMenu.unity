@@ -2824,6 +2824,7 @@ GameObject:
   - component: {fileID: 1979712481}
   - component: {fileID: 1979712480}
   - component: {fileID: 1979712484}
+  - component: {fileID: 1979712485}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -2952,6 +2953,25 @@ MonoBehaviour:
   hoverScale: 1.08
   pressedScale: 0.92
   feedbackDuration: 0.12
+--- !u!114 &1979712485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1979712479}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f60718293a4b5c6d7e8f90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dayNightSystem: {fileID: 0}
+  stageUIController: {fileID: 0}
+  dayMusic: {fileID: 0}
+  nightMusic: {fileID: 0}
+  buttonSound: {fileID: 0}
+  purchaseSound: {fileID: 0}
+  buildingPlacedSound: {fileID: 0}
 --- !u!1 &2060862275
 GameObject:
   m_ObjectHideFlags: 0
