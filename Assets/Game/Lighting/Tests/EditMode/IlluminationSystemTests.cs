@@ -264,15 +264,15 @@ namespace Game.Lighting.Tests
             float initialDamage = bootstrap.CandleEmitter.BaseDamagePerSecond;
 
             Assert.That(bootstrap.UpgradeRange(), Is.True);
-            Assert.That(bootstrap.CandleEmitter.BaseRadius, Is.EqualTo(initialRadius + 1f));
+            Assert.That(bootstrap.CandleEmitter.BaseRadius, Is.EqualTo(initialRadius + 0.25f));
             Assert.That(bootstrap.CandleEmitter.BaseIntensity, Is.EqualTo(initialIntensity));
             Assert.That(bootstrap.CandleEmitter.BaseDamagePerSecond, Is.EqualTo(initialDamage));
             Assert.That(bootstrap.RangeUpgradeLevel, Is.EqualTo(1));
             Assert.That(bootstrap.IntensityUpgradeLevel, Is.Zero);
 
             Assert.That(bootstrap.UpgradeIntensity(), Is.True);
-            Assert.That(bootstrap.CandleEmitter.BaseIntensity, Is.EqualTo(initialIntensity + 0.25f));
-            Assert.That(bootstrap.CandleEmitter.BaseDamagePerSecond, Is.EqualTo(initialDamage + 3f));
+            Assert.That(bootstrap.CandleEmitter.BaseIntensity, Is.EqualTo(initialIntensity + 0.075f));
+            Assert.That(bootstrap.CandleEmitter.BaseDamagePerSecond, Is.EqualTo(initialDamage + 0.9f));
             Assert.That(bootstrap.IntensityUpgradeLevel, Is.EqualTo(1));
         }
 
@@ -286,14 +286,22 @@ namespace Game.Lighting.Tests
             SetPrivateField(bootstrap, "centralCandle", candle);
             InvokePrivateMethod(bootstrap, "EnsureCandle");
 
-            Assert.That(bootstrap.UpgradeRange(), Is.True);
-            Assert.That(bootstrap.UpgradeRange(), Is.True);
-            Assert.That(bootstrap.UpgradeRange(), Is.True);
+            for (int i = 0; i < 10; i++)
+            {
+                Assert.That(bootstrap.UpgradeRange(), Is.True);
+                Assert.That(bootstrap.UpgradeIntensity(), Is.True);
+            }
             float radiusAtLimit = bootstrap.CandleEmitter.BaseRadius;
+            float intensityAtLimit = bootstrap.CandleEmitter.BaseIntensity;
+            float damageAtLimit = bootstrap.CandleEmitter.BaseDamagePerSecond;
 
             Assert.That(bootstrap.UpgradeRange(), Is.False);
+            Assert.That(bootstrap.UpgradeIntensity(), Is.False);
             Assert.That(bootstrap.CandleEmitter.BaseRadius, Is.EqualTo(radiusAtLimit));
-            Assert.That(bootstrap.RangeUpgradeLevel, Is.EqualTo(3));
+            Assert.That(bootstrap.CandleEmitter.BaseIntensity, Is.EqualTo(intensityAtLimit));
+            Assert.That(bootstrap.CandleEmitter.BaseDamagePerSecond, Is.EqualTo(damageAtLimit));
+            Assert.That(bootstrap.RangeUpgradeLevel, Is.EqualTo(10));
+            Assert.That(bootstrap.IntensityUpgradeLevel, Is.EqualTo(10));
         }
 
 [Test]

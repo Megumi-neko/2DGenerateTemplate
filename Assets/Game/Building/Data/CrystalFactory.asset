@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: "\u7ED3\u6676\u5DE5\u5382"
   prefab: {fileID: 5216215404874160765, guid: e17a4c9d6b3f5e7a8c2d1f0b4a6e9c83, type: 3}
   footprint: {x: 2, y: 2}
-  coinCost: 15
+  coinCost: 20
   canBuildDuringDay: 1
   maxHealth: 150
   emitsNightLight: 0
@@ -26,5 +26,5 @@ MonoBehaviour:
   lightDamageCap: 0
   generatesCoins: 1
   coinProductionAtNightOnly: 1
-  coinProductionAmount: 1000
+  coinProductionAmount: 5
   coinProductionInterval: 10

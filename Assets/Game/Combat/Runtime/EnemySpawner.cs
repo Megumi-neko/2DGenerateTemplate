@@ -22,8 +22,8 @@ namespace Game.Combat
         [SerializeField, Range(1, 6)] private int initialThreatLevel = 2;
         [SerializeField, Min(0.05f)] private float spawnInterval = 2f;
         [SerializeField, Min(0f)] private float firstSpawnDelay = 1f;
-        [SerializeField, Min(1)] private int maxAlive = 20;
-        [SerializeField, Min(1)] private int maxSpawnedPerNight = 60;
+        [SerializeField, Min(1)] private int maxAlive = 16;
+        [SerializeField, Min(1)] private int maxSpawnedPerNight = 36;
         [SerializeField, Min(1f)] private float spawnCountThreatMultiplier = 1.8f;
         [SerializeField, Min(0.01f)] private float spawnCountThreatExponent = 1.35f;
         [SerializeField, Min(1f)] private float aliveThreatMultiplier = 1.5f;
@@ -39,8 +39,8 @@ namespace Game.Combat
         [SerializeField, Min(1)] private int poolCapacity = 40;
 
         [Header("Boss Multipliers")]
-        [SerializeField, Min(1f)] private float bossHealthMultiplier = 4f;
-        [SerializeField, Min(1f)] private float bossAttackMultiplier = 1.75f;
+        [SerializeField, Min(1f)] private float bossHealthMultiplier = 4.5f;
+        [SerializeField, Min(1f)] private float bossAttackMultiplier = 1.8f;
         [SerializeField, Min(1f)] private float bossCoinRewardMultiplier = 2f;
 
         private readonly HashSet<EnemyController> activeEnemies =
