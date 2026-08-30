@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: SceneHistory
   m_EditorClassIdentifier: 
   _items:
-  - name: MainMenu
-    path: Assets/Scenes/MainMenu.unity
   - name: Stage 4
     path: Assets/Scenes/Stage 4.unity
   - name: End
     path: Assets/Scenes/End.unity
+  - name: MainMenu
+    path: Assets/Scenes/MainMenu.unity
   - name: Stage
     path: Assets/Scenes/Stage.unity
   - name: Stage 2
