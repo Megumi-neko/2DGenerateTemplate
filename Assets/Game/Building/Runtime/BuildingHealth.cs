@@ -1,5 +1,4 @@
 using System;
-using Game.BaseSystem;
 using UnityEngine;
 
 namespace Game.Building
@@ -41,7 +40,6 @@ namespace Game.Building
             float applied = Mathf.Min(currentHealth, amount);
             currentHealth -= applied;
             Damaged?.Invoke(this, applied);
-            CameraShakeController.ShakeMainCamera();
             Changed?.Invoke(this);
             if (currentHealth > 0f) return true;
             currentHealth = 0f;

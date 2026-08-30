@@ -187,7 +187,7 @@ namespace Game.UI
 
         private void StartGame()
         {
-            Game.BaseSystem.SceneManagerSystem.Instance.LoadScene("Stage");
+            Game.BaseSystem.SceneManagerSystem.Instance.LoadScene("Stage 4");
         }
 
         private void ExitGame()
