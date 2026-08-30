@@ -64,6 +64,11 @@ namespace Game.Lighting
                 return;
             }
 
+            if (labelText.fontSize != fontSize)
+            {
+                labelText.fontSize = fontSize;
+            }
+
             string intensityText = FormatIntensity(emitter.CurrentIntensity);
             if (labelText.text != intensityText)
             {
@@ -79,9 +84,7 @@ namespace Game.Lighting
                 labelPosition.x,
                 labelPosition.y,
                 emitter.transform.position.z);
-            canvasTransform.rotation = Quaternion.LookRotation(
-                -targetCamera.transform.forward,
-                targetCamera.transform.up);
+            canvasTransform.rotation = targetCamera.transform.rotation;
             canvasTransform.localScale = Vector3.one * CalculateSize(
                 initialSize,
                 growthMultiplier,
@@ -206,7 +209,7 @@ namespace Game.Lighting
             textRect.offsetMax = Vector2.zero;
             labelText = textObject.GetComponent<Text>();
             labelText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            labelText.fontSize = 36;
+            labelText.fontSize = fontSize;
             labelText.alignment = TextAnchor.MiddleCenter;
             labelText.color = LabelColor;
             labelText.raycastTarget = false;
@@ -249,6 +252,7 @@ namespace Game.Lighting
         private void OnValidate()
         {
             initialSize = Mathf.Max(MinimumSize, initialSize);
+            fontSize = Mathf.Clamp(fontSize, 1, 200);
             growthMultiplier = Mathf.Max(0f, growthMultiplier);
             edgeInset = Mathf.Max(0f, edgeInset);
         }

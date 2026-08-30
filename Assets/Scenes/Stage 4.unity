@@ -157162,10 +157162,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 621d5857f21545c29c647fee1db891a8, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   stageLighting: {fileID: 1388045010}
   initialSize: 0.01
+  fontSize: 36
   growthMultiplier: 0.12
   edgeInset: 0.25
 --- !u!1 &1388171589
