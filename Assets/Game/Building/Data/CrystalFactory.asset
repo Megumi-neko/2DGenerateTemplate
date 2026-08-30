@@ -26,5 +26,5 @@ MonoBehaviour:
   lightDamageCap: 0
   generatesCoins: 1
   coinProductionAtNightOnly: 1
-  coinProductionAmount: 5
+  coinProductionAmount: 1000
   coinProductionInterval: 10
