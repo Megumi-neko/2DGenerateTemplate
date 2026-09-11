@@ -2,7 +2,8 @@
   "name": "Game.Lighting",
   "rootNamespace": "Game.Lighting",
   "references": [
-    "Game.DayNight"
+    "Game.DayNight",
+    "Game.BaseSystem"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

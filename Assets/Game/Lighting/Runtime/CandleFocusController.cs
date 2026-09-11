@@ -1,3 +1,4 @@
+using Game.BaseSystem;
 using UnityEngine;
 
 namespace Game.Lighting
@@ -20,6 +21,7 @@ namespace Game.Lighting
         private bool forceAimLock;
         private Vector2 pointerWorldPosition;
         private bool hasPointerWorldPosition;
+        private CameraShakeController shakeController;
 
         public Camera TargetCamera => targetCamera;
         public LightEmitter2D ControlledEmitter => controlledEmitter;
@@ -127,6 +129,9 @@ private void Update()
             }
 
             Ray ray = targetCamera.ScreenPointToRay(Input.mousePosition);
+            // Undo the camera shake offset so screen shake does not move the aim
+            // while the pointer stands still.
+            ray.origin -= GetCurrentShakeOffset();
             float denominator = ray.direction.z;
             if (Mathf.Abs(denominator) <= GameplayPlaneEpsilon)
             {
@@ -144,6 +149,16 @@ private void Update()
             Vector3 point = ray.GetPoint(distance);
             worldPosition = new Vector2(point.x, point.y);
             return true;
+        }
+
+        private Vector3 GetCurrentShakeOffset()
+        {
+            if (shakeController == null)
+            {
+                shakeController = targetCamera.GetComponent<CameraShakeController>();
+            }
+
+            return shakeController == null ? Vector3.zero : shakeController.AppliedOffset;
         }
 
         private void OnValidate()

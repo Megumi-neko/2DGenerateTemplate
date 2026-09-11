@@ -137,14 +137,12 @@ namespace Game.UI
             {
                 StageLightingCameraFramer framer = lightingBootstrap.CameraFramer;
                 framer.SetManualMode(!isNight);
-                if (!isNight)
-                {
-                    framer.ResetToInitialPose();
-                }
-                else
+                if (isNight)
                 {
                     framer.ReframeImmediately();
                 }
+                // Day keeps the current (upgrade-raised) camera pose instead of
+                // resetting to the initial pose, so the night rise persists every day.
             }
 
             if (lightingBootstrap != null && lightingBootstrap.CandleEmitter != null)

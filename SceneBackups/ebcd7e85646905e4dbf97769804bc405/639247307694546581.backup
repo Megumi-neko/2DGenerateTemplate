@@ -168464,7 +168464,7 @@ MonoBehaviour:
   targetChangeThreshold: 0.05
   boundarySegments: 32
   maximumFramingOffset: 20
-  cameraRisePerRange: 1
+  cameraRisePerRange: 0
   maximumCameraRise: 0
   maximumCameraBackstep: 80
   enforceSafeViewportDuringMotion: 1
