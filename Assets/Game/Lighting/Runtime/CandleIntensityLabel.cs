@@ -10,7 +10,8 @@ namespace Game.Lighting
     public sealed class CandleIntensityLabel : MonoBehaviour
     {
         private const float MinimumSize = 0.001f;
-        private const int CanvasSortingOrder = 25;
+        private const float ReferenceWorldSize = 0.01f;
+        private const int CanvasSortingOrder = 210;
         private const string CanvasName = "Candle Intensity Label Canvas";
         private static readonly Color LabelColor = new Color(0.2f, 1f, 0.35f, 0.95f);
 
@@ -25,6 +26,7 @@ namespace Game.Lighting
         private InnerCircleLight2D innerCircle;
         private Canvas labelCanvas;
         private RectTransform canvasTransform;
+        private RectTransform labelRect;
         private Text labelText;
         private Vector3 initialCameraPosition;
         private Vector3 initialCameraForward;
@@ -58,11 +60,45 @@ namespace Game.Lighting
                 emitter.IsEmitting &&
                 emitter.Shape == LightShape2D.Sector &&
                 emitter.CurrentIntensity > 0f;
-            SetVisible(shouldShow);
             if (!shouldShow)
+            {
+                SetVisible(false);
+                return;
+            }
+
+            Vector2 labelPosition = CalculatePosition(
+                emitter.WorldPosition,
+                emitter.Direction,
+                innerCircle.InnerRadius,
+                edgeInset);
+            Vector3 screenPosition = targetCamera.WorldToScreenPoint(new Vector3(
+                labelPosition.x,
+                labelPosition.y,
+                emitter.transform.position.z));
+            bool isVisible = screenPosition.z > 0f;
+            Vector2 localPosition = default;
+            if (isVisible)
+            {
+                isVisible = RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    canvasTransform,
+                    screenPosition,
+                    null,
+                    out localPosition);
+            }
+            SetVisible(isVisible);
+            if (!isVisible)
             {
                 return;
             }
+
+            labelRect.anchoredPosition = localPosition;
+            labelRect.localScale = Vector3.one * CalculateOverlayScale(CalculateSize(
+                initialSize,
+                growthMultiplier,
+                initialCameraPosition,
+                targetCamera.transform.position,
+                initialCameraForward,
+                initialCameraUp));
 
             if (labelText.fontSize != fontSize)
             {
@@ -74,24 +110,6 @@ namespace Game.Lighting
             {
                 labelText.text = intensityText;
             }
-
-            Vector2 labelPosition = CalculatePosition(
-                emitter.WorldPosition,
-                emitter.Direction,
-                innerCircle.InnerRadius,
-                edgeInset);
-            canvasTransform.position = new Vector3(
-                labelPosition.x,
-                labelPosition.y,
-                emitter.transform.position.z);
-            canvasTransform.rotation = targetCamera.transform.rotation;
-            canvasTransform.localScale = Vector3.one * CalculateSize(
-                initialSize,
-                growthMultiplier,
-                initialCameraPosition,
-                targetCamera.transform.position,
-                initialCameraForward,
-                initialCameraUp);
         }
 
         public static string FormatIntensity(float intensity)
@@ -134,6 +152,11 @@ namespace Game.Lighting
                 (1f + Mathf.Max(0f, multiplier) * travel);
         }
 
+        private static float CalculateOverlayScale(float worldSize)
+        {
+            return Mathf.Max(MinimumSize, worldSize) / ReferenceWorldSize;
+        }
+
         private bool TryInitialize()
         {
             if (stageLighting == null)
@@ -171,7 +194,8 @@ namespace Game.Lighting
                 hasCameraBaseline = true;
             }
 
-            return labelCanvas != null && canvasTransform != null && labelText != null;
+            return labelCanvas != null && canvasTransform != null && labelRect != null &&
+                labelText != null;
         }
 
         private void CreateLabel()
@@ -180,18 +204,19 @@ namespace Game.Lighting
             GameObject canvasObject = existing == null
                 ? new GameObject(CanvasName, typeof(RectTransform), typeof(Canvas))
                 : existing.gameObject;
-            if (existing == null)
-            {
-                canvasObject.transform.SetParent(transform, false);
-            }
+            canvasObject.transform.SetParent(null, false);
 
             labelCanvas = canvasObject.GetComponent<Canvas>();
-            labelCanvas.renderMode = RenderMode.WorldSpace;
-            labelCanvas.worldCamera = targetCamera;
+            labelCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            labelCanvas.worldCamera = null;
             labelCanvas.overrideSorting = true;
             labelCanvas.sortingOrder = CanvasSortingOrder;
+            labelCanvas.pixelPerfect = false;
             canvasTransform = canvasObject.GetComponent<RectTransform>();
-            canvasTransform.sizeDelta = new Vector2(128f, 48f);
+            canvasTransform.anchorMin = Vector2.zero;
+            canvasTransform.anchorMax = Vector2.one;
+            canvasTransform.offsetMin = Vector2.zero;
+            canvasTransform.offsetMax = Vector2.zero;
 
             Transform textTransform = canvasTransform.Find("Intensity");
             GameObject textObject = textTransform == null
@@ -202,11 +227,12 @@ namespace Game.Lighting
                 textObject.transform.SetParent(canvasTransform, false);
             }
 
-            RectTransform textRect = textObject.GetComponent<RectTransform>();
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = Vector2.zero;
-            textRect.offsetMax = Vector2.zero;
+            labelRect = textObject.GetComponent<RectTransform>();
+            labelRect.anchorMin = new Vector2(0.5f, 0.5f);
+            labelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            labelRect.pivot = new Vector2(0.5f, 0.5f);
+            labelRect.sizeDelta = new Vector2(128f, 48f);
+            labelRect.anchoredPosition = Vector2.zero;
             labelText = textObject.GetComponent<Text>();
             labelText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             labelText.fontSize = fontSize;
@@ -238,6 +264,7 @@ namespace Game.Lighting
             GameObject canvasObject = labelCanvas.gameObject;
             labelCanvas = null;
             canvasTransform = null;
+            labelRect = null;
             labelText = null;
             if (Application.isPlaying)
             {

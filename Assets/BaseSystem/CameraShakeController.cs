@@ -44,6 +44,9 @@ namespace Game.BaseSystem
             noiseTime = 0f;
         }
 
+        /// <summary>Offset the shake currently applies to the camera. Zero when idle.</summary>
+        public Vector3 AppliedOffset => appliedOffset;
+
         private void LateUpdate()
         {
             UpdateShake(Time.unscaledDeltaTime);

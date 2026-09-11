@@ -27,6 +27,7 @@ namespace Game.UI
         [SerializeField] private Color nightColor = Color.black;
         [SerializeField] private Color dawnColor = new Color(0.55f, 0.55f, 0.55f, 1f);
         [SerializeField] private int sortingOrder = 32000;
+        [SerializeField] private KeyCode skipKey = KeyCode.Space;
 
         private Canvas transitionCanvas;
         private CanvasGroup transitionGroup;
@@ -75,6 +76,42 @@ namespace Game.UI
             {
                 FinishVideoAndPlayAnimation();
             }
+
+            if (IsTransitioning && Input.GetKeyDown(skipKey))
+            {
+                SkipTransition();
+            }
+        }
+
+        private bool IsTransitioning => awaitingVideo || transitionTween != null;
+
+        private void SkipTransition()
+        {
+            awaitingVideo = false;
+            pendingVideoClip = null;
+            if (videoPlayer != null)
+            {
+                videoPlayer.sendFrameReadyEvents = false;
+                videoPlayer.Stop();
+            }
+
+            KillTransitionTween();
+            if (transitionImage != null)
+            {
+                transitionImage.texture = Texture2D.whiteTexture;
+                transitionImage.color = pendingTargetNight ? nightColor : Color.white;
+                transitionImage.raycastTarget = false;
+            }
+
+            if (transitionGroup != null)
+            {
+                transitionGroup.alpha = pendingTargetNight ? nightOverlayAlpha : 0f;
+                transitionGroup.blocksRaycasts = false;
+            }
+
+            appliedNight = pendingTargetNight;
+            hasAppliedState = true;
+            ReleaseGameTimePause();
         }
 
         private void OnDisable()
