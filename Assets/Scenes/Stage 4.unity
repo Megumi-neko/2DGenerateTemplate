@@ -175202,7 +175202,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nightDurationsMinutes:
-  - 1
+  - 0.1
   - 2
   - 4
   - 7
@@ -176990,6 +176990,7 @@ MonoBehaviour:
   nightColor: {r: 0, g: 0, b: 0, a: 1}
   dawnColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
   sortingOrder: 32000
+  skipKey: 32
 --- !u!114 &3100000012
 MonoBehaviour:
   m_ObjectHideFlags: 0

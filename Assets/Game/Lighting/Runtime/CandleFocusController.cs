@@ -55,17 +55,20 @@ private void Update()
                 return;
             }
 
-            if (Input.GetKeyDown(aimLockKey))
+            // Ignore gameplay input while the day/night transition pauses the game,
+            // so the skip key does not toggle the candle shape.
+            bool inputEnabled = Time.timeScale > 0f;
+            if (inputEnabled && Input.GetKeyDown(aimLockKey))
             {
                 ToggleAimLock();
             }
 
-            if (allowShapeToggle && Input.GetKeyDown(KeyCode.Space))
+            if (inputEnabled && allowShapeToggle && Input.GetKeyDown(KeyCode.Space))
             {
                 controlledEmitter.ToggleShape();
             }
 
-            if (allowSectorAngleInput)
+            if (inputEnabled && allowSectorAngleInput)
             {
                 float scroll = Input.mouseScrollDelta.y;
                 if (Mathf.Abs(scroll) <= GameplayPlaneEpsilon)
