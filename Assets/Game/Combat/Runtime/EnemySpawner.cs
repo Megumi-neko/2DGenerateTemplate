@@ -54,6 +54,7 @@ namespace Game.Combat
         private int nightSpawnLimit;
         private int nightMaxAlive;
         private bool bossSpawnedThisNight;
+        private bool bossDefeatedThisNight;
         private bool nightActive;
 
         public int AliveCount => activeEnemies.Count;
@@ -120,7 +121,12 @@ namespace Game.Combat
                 }
             }
 
-            if (spawnedThisNight >= nightSpawnLimit || activeEnemies.Count >= nightMaxAlive)
+            if (!ShouldSpawnRegularEnemy(
+                spawnedThisNight,
+                nightSpawnLimit,
+                activeEnemies.Count,
+                nightMaxAlive,
+                bossDefeatedThisNight))
             {
                 return;
             }
@@ -174,6 +180,21 @@ namespace Game.Combat
             return isNightActive && !alreadySpawned && nightRemainingRatio <= 0.5f;
         }
 
+        public static bool ShouldSpawnRegularEnemy(
+            int spawnedThisNight,
+            int nightSpawnLimit,
+            int aliveCount,
+            int nightMaxAlive,
+            bool bossDefeatedThisNight)
+        {
+            if (aliveCount >= Mathf.Max(1, nightMaxAlive))
+            {
+                return false;
+            }
+
+            return bossDefeatedThisNight || spawnedThisNight < Mathf.Max(1, nightSpawnLimit);
+        }
+
         public void BeginNight()
         {
             ResolveReferences();
@@ -196,6 +217,7 @@ namespace Game.Combat
                 maxAlive,
                 aliveThreatMultiplier);
             bossSpawnedThisNight = false;
+            bossDefeatedThisNight = false;
             spawnTimer = firstSpawnDelay;
         }
 
@@ -410,6 +432,11 @@ namespace Game.Combat
             if (enemy == null || !activeEnemies.Remove(enemy))
             {
                 return;
+            }
+
+            if (enemy.IsBoss)
+            {
+                bossDefeatedThisNight = true;
             }
 
             enemyPool?.Return(enemy.gameObject);

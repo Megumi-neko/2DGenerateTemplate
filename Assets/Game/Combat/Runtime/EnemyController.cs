@@ -19,9 +19,9 @@ namespace Game.Combat
         [Header("Combat")]
         [SerializeField, Min(0.01f)] private float attackRange = 0.75f;
         [SerializeField, Min(0.05f)] private float attackInterval = 1f;
-        [Tooltip("光照伤害的触发间隔（秒）。敌人每隔该时间结算一次光照伤害，而不是每帧造成伤害。")]
+        [Tooltip("光照伤害的触发间隔（秒）。敌人每隔该时间结算一次光照伤害，并弹出一次伤害数字。")]
         [FormerlySerializedAs("illuminationSampleInterval")]
-        [SerializeField, Min(0.02f)] private float illuminationDamageInterval = 0.1f;
+        [SerializeField, Min(0.02f)] private float illuminationDamageInterval = 0.5f;
         [SerializeField, Range(0.01f, 1f)] private float minimumSectorSpeedMultiplier = 0.5f;
 
         [Header("Visual")]

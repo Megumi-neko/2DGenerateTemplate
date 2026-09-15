@@ -163,6 +163,82 @@ namespace Game.Lighting.Tests
         }
 
         [Test]
+        public void VisualIntensityMultiplier_DoesNotChangeGameplaySample()
+        {
+            LightEmitter2D source = CreateEmitter(Vector2.zero, 4f, 0.8f, 10f);
+            InnerCircleLight2D innerCircle = source.gameObject.AddComponent<InnerCircleLight2D>();
+            innerCircle.SynchronizeNow();
+            LightEmitter2D inner = innerCircle.InnerEmitter;
+            inner.VisualIntensityMultiplier = 1.2f;
+
+            IlluminationSample sample = IlluminationSystem.Sample(Vector2.zero);
+
+            Assert.That(inner.VisualIntensity, Is.EqualTo(inner.CurrentIntensity * 1.2f).Within(0.0001f));
+            Assert.That(sample.Intensity, Is.EqualTo(source.CurrentIntensity).Within(0.0001f));
+            Assert.That(
+                sample.DamagePerSecond,
+                Is.EqualTo(source.CurrentDamagePerSecond + inner.CurrentDamagePerSecond).Within(0.0001f));
+        }
+
+        [Test]
+        public void VisualIntensity_ScalesWithMultiplier()
+        {
+            LightEmitter2D emitter = CreateEmitter(Vector2.zero, 4f, 1f, 10f);
+
+            emitter.VisualIntensityMultiplier = 1.25f;
+            Assert.That(emitter.VisualIntensityMultiplier, Is.EqualTo(1.25f).Within(0.0001f));
+            Assert.That(emitter.VisualIntensity, Is.EqualTo(1.25f).Within(0.0001f));
+
+            emitter.VisualIntensityMultiplier = 0f;
+            Assert.That(emitter.VisualIntensityMultiplier, Is.EqualTo(1f));
+            Assert.That(emitter.VisualIntensity, Is.EqualTo(emitter.CurrentIntensity).Within(0.0001f));
+
+            emitter.VisualIntensityMultiplier = float.NaN;
+            Assert.That(emitter.VisualIntensityMultiplier, Is.EqualTo(1f));
+        }
+
+        [Test]
+        public void VisualRangeMultiplier_DoesNotChangeGameplayRange()
+        {
+            LightEmitter2D emitter = CreateEmitter(Vector2.zero, 4f, 1f, 10f);
+
+            emitter.VisualRangeMultiplier = 1.08f;
+            Assert.That(emitter.EffectiveRange, Is.EqualTo(4f).Within(0.0001f));
+            Assert.That(emitter.VisualRange, Is.EqualTo(4.32f).Within(0.0001f));
+            Assert.That(emitter.Contains(new Vector2(4.1f, 0f)), Is.False);
+
+            emitter.VisualRangeMultiplier = 0f;
+            Assert.That(emitter.VisualRangeMultiplier, Is.EqualTo(1f));
+            Assert.That(emitter.VisualRange, Is.EqualTo(emitter.EffectiveRange).Within(0.0001f));
+        }
+
+        [Test]
+        public void InnerCircleFlicker_ResetsMultiplierWhenNotEmitting()
+        {
+            LightEmitter2D source = CreateEmitter(Vector2.zero, 4f, 1f, 10f);
+            InnerCircleLight2D innerCircle = source.gameObject.AddComponent<InnerCircleLight2D>();
+            innerCircle.SynchronizeNow();
+            InnerCircleFlicker2D flicker = source.gameObject.AddComponent<InnerCircleFlicker2D>();
+            LightEmitter2D inner = innerCircle.InnerEmitter;
+
+            flicker.ApplyNow();
+            Assert.That(
+                inner.VisualIntensityMultiplier,
+                Is.EqualTo(flicker.EvaluateIntensityMultiplier(Time.time)).Within(0.0001f));
+            Assert.That(
+                inner.VisualRangeMultiplier,
+                Is.EqualTo(flicker.EvaluateRangeMultiplier(Time.time)).Within(0.0001f));
+            Assert.That(inner.VisualIntensityMultiplier, Is.InRange(0.78f, 1.22f));
+            Assert.That(inner.VisualRangeMultiplier, Is.InRange(0.92f, 1.08f));
+
+            source.SetEmitting(false);
+            innerCircle.SynchronizeNow();
+            flicker.ApplyNow();
+            Assert.That(inner.VisualIntensityMultiplier, Is.EqualTo(1f));
+            Assert.That(inner.VisualRangeMultiplier, Is.EqualTo(1f));
+        }
+
+        [Test]
         public void CandleFocusController_TogglesAimLockState()
         {
             GameObject controllerObject = new GameObject("Test Focus Controller");
@@ -218,6 +294,7 @@ namespace Game.Lighting.Tests
             Assert.That(bootstrap.CandleEmitter.BaseRadius, Is.EqualTo(7.5f));
             Assert.That(bootstrap.CandleEmitter.EffectiveRange, Is.EqualTo(7.5f));
             Assert.That(bootstrap.InnerCircle.InnerRadius, Is.EqualTo(3f).Within(0.0001f));
+            Assert.That(candle.GetComponent<InnerCircleFlicker2D>(), Is.Not.Null);
             Assert.That(candle.transform.Find("Visual"), Is.Not.Null);
             Assert.That(
                 candle.transform.Find("Stage 1 Central Candle Visual"),

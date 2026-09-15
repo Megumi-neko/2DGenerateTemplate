@@ -22,7 +22,7 @@ namespace Game.Combat.Tests
         public void DefaultStats_IncreaseHealthAndAttackAcrossLevels()
         {
             EnemyLevelStats previous = EnemyStats.GetDefault(1);
-            Assert.That(previous.MaxHealth, Is.EqualTo(90f));
+            Assert.That(previous.MaxHealth, Is.EqualTo(80f));
             for (int level = 2; level <= EnemyStats.MaximumThreatLevel; level++)
             {
                 EnemyLevelStats current = EnemyStats.GetDefault(level);
@@ -70,6 +70,16 @@ namespace Game.Combat.Tests
             Assert.That(levelThree - levelTwo, Is.GreaterThan(levelTwo - levelOne));
         }
 
+        [TestCase(0f, "0")]
+        [TestCase(0.4f, "0")]
+        [TestCase(0.6f, "1")]
+        [TestCase(4.2f, "4")]
+        [TestCase(9.6f, "10")]
+        public void DamageNumber_FormatsAsInteger(float damage, string expected)
+        {
+            Assert.That(DamageNumberPopup.FormatDamage(damage), Is.EqualTo(expected));
+        }
+
         [Test]
         public void BossScale_IsLargerThanSameThreatEnemy()
         {
@@ -97,6 +107,15 @@ namespace Game.Combat.Tests
             Assert.That(EnemySpawner.ShouldSpawnBoss(true, false, 0.5f), Is.True);
             Assert.That(EnemySpawner.ShouldSpawnBoss(true, true, 0.25f), Is.False);
             Assert.That(EnemySpawner.ShouldSpawnBoss(false, false, 0.25f), Is.False);
+        }
+
+        [Test]
+        public void RegularSpawn_ContinuesAfterBossUntilNightEnds()
+        {
+            Assert.That(EnemySpawner.ShouldSpawnRegularEnemy(36, 36, 4, 16, false), Is.False);
+            Assert.That(EnemySpawner.ShouldSpawnRegularEnemy(36, 36, 4, 16, true), Is.True);
+            Assert.That(EnemySpawner.ShouldSpawnRegularEnemy(80, 36, 16, 16, true), Is.False);
+            Assert.That(EnemySpawner.ShouldSpawnRegularEnemy(20, 36, 4, 16, false), Is.True);
         }
 
         [Test]
@@ -225,14 +244,15 @@ namespace Game.Combat.Tests
         }
 
         [Test]
-        public void DefaultStats_UseRaisedHealthWithoutChangingAttack()
+        public void DefaultStats_UseFlowTunedHealthAndAttack()
         {
             EnemyLevelStats levelOne = EnemyStats.GetDefault(1);
             EnemyLevelStats levelSix = EnemyStats.GetDefault(6);
 
-            Assert.That(levelOne.MaxHealth, Is.EqualTo(90f));
-            Assert.That(levelSix.MaxHealth, Is.EqualTo(675f));
-            Assert.That(levelSix.AttackDamage, Is.EqualTo(25f));
+            Assert.That(levelOne.MaxHealth, Is.EqualTo(80f));
+            Assert.That(levelOne.AttackDamage, Is.EqualTo(6f));
+            Assert.That(levelSix.MaxHealth, Is.EqualTo(600f));
+            Assert.That(levelSix.AttackDamage, Is.EqualTo(28f));
         }
 
         [Test]

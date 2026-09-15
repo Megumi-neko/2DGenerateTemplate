@@ -27,6 +27,9 @@ namespace Game.Lighting
         [Header("Editor")]
         [SerializeField] private Color gizmoColor = new Color(1f, 0.72f, 0.2f, 0.9f);
 
+        private float visualIntensityMultiplier = 1f;
+        private float visualRangeMultiplier = 1f;
+
         public LightShape2D Shape
         {
             get => shape;
@@ -207,6 +210,22 @@ namespace Game.Lighting
 
         public float CurrentDamagePerSecond => baseDamagePerSecond * FocusMultiplier;
 
+        public float VisualIntensityMultiplier
+        {
+            get => visualIntensityMultiplier;
+            set => visualIntensityMultiplier = SanitizeVisualMultiplier(value);
+        }
+
+        public float VisualIntensity => CurrentIntensity * visualIntensityMultiplier;
+
+        public float VisualRangeMultiplier
+        {
+            get => visualRangeMultiplier;
+            set => visualRangeMultiplier = SanitizeVisualMultiplier(value);
+        }
+
+        public float VisualRange => Mathf.Max(MinimumRadius, EffectiveRange * visualRangeMultiplier);
+
         public float DirectionAngleDegrees => Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
         private void OnEnable()
@@ -372,6 +391,8 @@ namespace Game.Lighting
             baseDamagePerSecond = SanitizeAtLeast(baseDamagePerSecond, 0f, 0f);
             maximumFocusMultiplier = SanitizeAtLeast(maximumFocusMultiplier, 1f, 1f);
             edgeSoftness = SanitizeAtLeast(edgeSoftness, 0f, 0f);
+            visualIntensityMultiplier = SanitizeVisualMultiplier(visualIntensityMultiplier);
+            visualRangeMultiplier = SanitizeVisualMultiplier(visualRangeMultiplier);
         }
 
         private void NotifyChanged()
@@ -387,6 +408,16 @@ namespace Game.Lighting
             }
 
             return Mathf.Max(minimum, value);
+        }
+
+        private static float SanitizeVisualMultiplier(float value)
+        {
+            if (float.IsNaN(value) || float.IsInfinity(value) || value <= 0f)
+            {
+                return 1f;
+            }
+
+            return value;
         }
     }
 }

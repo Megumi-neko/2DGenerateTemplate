@@ -20,13 +20,15 @@
 - 半径等于主蜡烛基础半径乘 `Radius Multiplier`，默认是 0.5。
 - 基础亮度、基础 DPS、边缘柔化和发光开关与主蜡烛同步。
 - 主光源聚光时，内圈不会复制主光源的聚光倍率，因此保持稳定的近距离圆形安全区。
+- 可再挂 `InnerCircleFlicker2D`：只闪黑暗遮罩上的内圈亮度和半径呼吸，不改照明判定、伤害和建造范围。
 
 一般蜡烛的组件组合为：
 
 ```text
 Candle
-├── LightEmitter2D       # 可切换圆形/扇形的主光源
-└── InnerCircleLight2D   # 固定的小圆形内圈
+├── LightEmitter2D          # 可切换圆形/扇形的主光源
+├── InnerCircleLight2D      # 固定的小圆形内圈
+└── InnerCircleFlicker2D    # 内圈视觉闪烁（可选）
 ```
 
 ## 在蜡烛上使用

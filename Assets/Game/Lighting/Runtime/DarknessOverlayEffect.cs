@@ -127,7 +127,7 @@ namespace Game.Lighting
             for (int i = 0; i < lightCount; i++)
             {
                 LightEmitter2D emitter = candidates[i];
-                float range = emitter.EffectiveRange;
+                float range = emitter.VisualRange;
                 float softness = Mathf.Clamp(emitter.EdgeSoftness, 0f, range);
                 bool rendersAsSector =
                     emitter.Shape == LightShape2D.Sector &&
@@ -146,7 +146,7 @@ namespace Game.Lighting
                     position.x,
                     position.y,
                     range,
-                    emitter.CurrentIntensity);
+                    emitter.VisualIntensity);
                 lightDirectionShapeSoftness[i] = new Vector4(
                     direction.x,
                     direction.y,

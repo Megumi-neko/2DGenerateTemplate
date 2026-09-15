@@ -8,8 +8,6 @@ namespace Game.Combat
     {
         [SerializeField] private Text text;
         [SerializeField] private CanvasGroup canvasGroup;
-        [Tooltip("同一目标在这段时间内再次受伤时，伤害数字会累加而不是新建跳字。")]
-        [SerializeField, Min(0f)] private float mergeWindow = 1.25f;
         [SerializeField, Min(0.01f)] private float visibleDuration = 1.5f;
         [SerializeField, Min(0f)] private float riseDistance = 0.6f;
         [SerializeField, Min(0.01f)] private float startScale = 1.2f;
@@ -18,13 +16,12 @@ namespace Game.Combat
 
         private Transform owner;
         private Vector3 baseWorldPosition;
-        private float accumulatedDamage;
-        private float lastDamageTime = float.NegativeInfinity;
+        private float displayedDamage;
         private float animationTime;
 
         public bool IsPlaying => owner != null && animationTime < visibleDuration;
         public Transform Owner => owner;
-        public float AccumulatedDamage => accumulatedDamage;
+        public float DisplayedDamage => displayedDamage;
 
         private void Awake()
         {
@@ -74,8 +71,7 @@ namespace Game.Combat
             }
 
             owner = newOwner;
-            accumulatedDamage = damage;
-            lastDamageTime = Time.time;
+            displayedDamage = damage;
             animationTime = 0f;
             baseWorldPosition = owner.position + worldOffset;
             transform.position = baseWorldPosition;
@@ -86,38 +82,13 @@ namespace Game.Combat
             }
 
             RenderDamage();
-        }
-
-        public bool TryMerge(Transform expectedOwner, float damage, Vector3 worldOffset)
-        {
-            if (!IsPlaying || owner != expectedOwner ||
-                Time.time - lastDamageTime > mergeWindow ||
-                damage <= 0f || !IsFinite(damage))
-            {
-                return false;
-            }
-
-            accumulatedDamage += damage;
-            lastDamageTime = Time.time;
-            animationTime = 0f;
-            baseWorldPosition = owner.position + worldOffset;
-            transform.position = baseWorldPosition;
-            transform.localScale = Vector3.one * startScale;
-            if (canvasGroup != null)
-            {
-                canvasGroup.alpha = 1f;
-            }
-
-            RenderDamage();
-            return true;
         }
 
         public void Hide()
         {
             owner = null;
-            accumulatedDamage = 0f;
+            displayedDamage = 0f;
             animationTime = visibleDuration;
-            lastDamageTime = float.NegativeInfinity;
             if (canvasGroup != null)
             {
                 canvasGroup.alpha = 0f;
@@ -133,8 +104,8 @@ namespace Game.Combat
                 return;
             }
 
-            text.text = FormatDamage(accumulatedDamage);
-            float redFactor = 1f - Mathf.Exp(-accumulatedDamage / redApproachDamage);
+            text.text = FormatDamage(displayedDamage);
+            float redFactor = 1f - Mathf.Exp(-displayedDamage / redApproachDamage);
             text.color = Color.Lerp(startDamageColor, Color.red, redFactor);
         }
 
@@ -153,9 +124,7 @@ namespace Game.Combat
 
         public static string FormatDamage(float damage)
         {
-            return damage >= 100f
-                ? damage.ToString("0")
-                : damage.ToString("0.0#");
+            return Mathf.RoundToInt(Mathf.Max(0f, damage)).ToString();
         }
 
         private static float EaseOutCubic(float value)
@@ -179,8 +148,7 @@ namespace Game.Combat
 
         private void OnValidate()
         {
-            mergeWindow = Mathf.Max(0f, mergeWindow);
-            visibleDuration = Mathf.Max(0.01f, mergeWindow, visibleDuration);
+            visibleDuration = Mathf.Max(0.01f, visibleDuration);
             riseDistance = Mathf.Max(0f, riseDistance);
             startScale = Mathf.Max(0.01f, startScale);
             redApproachDamage = Mathf.Max(0.01f, redApproachDamage);

@@ -7,7 +7,7 @@ namespace Game.Building
     [DisallowMultipleComponent]
     public sealed class CoinInventory : MonoBehaviour
     {
-        [SerializeField, Min(0)] private int initialCoins = 20;
+        [SerializeField, Min(0)] private int initialCoins = 50;
 
         private int coins;
         private bool initialized;

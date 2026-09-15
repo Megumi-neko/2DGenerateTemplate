@@ -1,4 +1,5 @@
 using System.Globalization;
+using Game.BaseSystem;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -234,7 +235,7 @@ namespace Game.Lighting
             labelRect.sizeDelta = new Vector2(128f, 48f);
             labelRect.anchoredPosition = Vector2.zero;
             labelText = textObject.GetComponent<Text>();
-            labelText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            labelText.font = GameUiFont.Load();
             labelText.fontSize = fontSize;
             labelText.alignment = TextAnchor.MiddleCenter;
             labelText.color = LabelColor;

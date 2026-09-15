@@ -291,6 +291,11 @@ namespace Game.Lighting
 
             innerCircle.RadiusMultiplier = innerRadiusMultiplier;
 
+            if (existingCandle.GetComponent<InnerCircleFlicker2D>() == null)
+            {
+                existingCandle.AddComponent<InnerCircleFlicker2D>();
+            }
+
             CandleFocusController focusController =
                 existingCandle.GetComponent<CandleFocusController>();
             if (focusController == null)

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Game.BaseSystem;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,18 +8,17 @@ namespace Game.Combat
     [DisallowMultipleComponent]
     public sealed class DamageNumberManager : MonoBehaviour
     {
-        private const int DefaultPoolSize = 32;
+        private const int DefaultPoolSize = 64;
         private const float CanvasScale = 0.01f;
 
         [SerializeField, Min(1)] private int poolSize = DefaultPoolSize;
         [SerializeField, Min(0f)] private float worldOffsetY = 1.4f;
+        [SerializeField, Min(0f)] private float horizontalJitter = 0.22f;
 
         private readonly List<DamageNumberPopup> pool = new List<DamageNumberPopup>();
         private readonly HashSet<Health> subscribedHealth = new HashSet<Health>();
         private readonly List<Health> activeHealth = new List<Health>();
         private readonly List<Health> unsubscribeBuffer = new List<Health>();
-        private readonly Dictionary<Health, DamageNumberPopup> activePopups =
-            new Dictionary<Health, DamageNumberPopup>();
         private Transform popupRoot;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -47,7 +47,6 @@ namespace Game.Combat
         private void Update()
         {
             SyncHealthSubscriptions();
-            ReleaseFinishedPopups();
         }
 
         private void SyncHealthSubscriptions()
@@ -84,11 +83,7 @@ namespace Game.Combat
                 Health health = unsubscribeBuffer[i];
                 health.Damaged -= OnEnemyDamaged;
                 subscribedHealth.Remove(health);
-                if (activePopups.TryGetValue(health, out DamageNumberPopup popup))
-                {
-                    popup.Hide();
-                    activePopups.Remove(health);
-                }
+                HidePopupsFor(health);
             }
         }
 
@@ -99,53 +94,17 @@ namespace Game.Combat
                 return;
             }
 
-            Vector3 offset = Vector3.up * worldOffsetY;
-            if (activePopups.TryGetValue(health, out DamageNumberPopup current))
-            {
-                if (current.TryMerge(health.transform, appliedDamage, offset))
-                {
-                    return;
-                }
-
-                current.Hide();
-                activePopups.Remove(health);
-            }
-
             DamageNumberPopup popup = GetAvailablePopup();
             if (popup == null)
             {
                 return;
             }
 
+            Vector3 offset = new Vector3(
+                Random.Range(-horizontalJitter, horizontalJitter),
+                worldOffsetY,
+                0f);
             popup.Show(health.transform, appliedDamage, offset);
-            activePopups[health] = popup;
-        }
-
-        private void ReleaseFinishedPopups()
-        {
-            if (activePopups.Count == 0)
-            {
-                return;
-            }
-
-            unsubscribeBuffer.Clear();
-            foreach (KeyValuePair<Health, DamageNumberPopup> entry in activePopups)
-            {
-                if (entry.Key == null || entry.Value == null || !entry.Value.IsPlaying)
-                {
-                    unsubscribeBuffer.Add(entry.Key);
-                }
-            }
-
-            for (int i = 0; i < unsubscribeBuffer.Count; i++)
-            {
-                Health health = unsubscribeBuffer[i];
-                if (activePopups.TryGetValue(health, out DamageNumberPopup popup))
-                {
-                    popup.Hide();
-                    activePopups.Remove(health);
-                }
-            }
         }
 
         private DamageNumberPopup GetAvailablePopup()
@@ -161,6 +120,24 @@ namespace Game.Combat
             return null;
         }
 
+        private void HidePopupsFor(Health health)
+        {
+            if (health == null)
+            {
+                return;
+            }
+
+            Transform owner = health.transform;
+            for (int i = 0; i < pool.Count; i++)
+            {
+                DamageNumberPopup popup = pool[i];
+                if (popup != null && popup.Owner == owner)
+                {
+                    popup.Hide();
+                }
+            }
+        }
+
         private void CreateCanvasAndPool()
         {
             GameObject canvasObject = new GameObject("Damage Number Canvas");
@@ -171,6 +148,7 @@ namespace Game.Combat
             canvas.sortingOrder = 30;
             canvasObject.AddComponent<GraphicRaycaster>();
             popupRoot = canvasObject.transform;
+            Font font = GameUiFont.Load();
 
             for (int i = 0; i < Mathf.Max(1, poolSize); i++)
             {
@@ -185,7 +163,7 @@ namespace Game.Combat
                 RectTransform rect = popupObject.GetComponent<RectTransform>();
                 rect.sizeDelta = new Vector2(180f, 64f);
                 Text text = popupObject.GetComponent<Text>();
-                text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                text.font = font;
                 text.fontSize = 48;
                 text.alignment = TextAnchor.MiddleCenter;
                 text.color = new Color(1f, 0.65f, 0.65f, 1f);
@@ -205,13 +183,20 @@ namespace Game.Combat
             }
 
             subscribedHealth.Clear();
-            activePopups.Clear();
+            for (int i = 0; i < pool.Count; i++)
+            {
+                if (pool[i] != null)
+                {
+                    pool[i].Hide();
+                }
+            }
         }
 
         private void OnValidate()
         {
             poolSize = Mathf.Max(1, poolSize);
             worldOffsetY = Mathf.Max(0f, worldOffsetY);
+            horizontalJitter = Mathf.Max(0f, horizontalJitter);
         }
     }
 }

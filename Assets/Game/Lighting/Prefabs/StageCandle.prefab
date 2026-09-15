@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7400000000000006}
   - component: {fileID: 7400000000000007}
   - component: {fileID: 7400000000000008}
+  - component: {fileID: 8876931986481962414}
   m_Layer: 0
   m_Name: StageCandle
   m_TagString: Untagged
@@ -91,6 +92,26 @@ MonoBehaviour:
   sectorAngleStep: 10
   allowShapeToggle: 1
   allowSectorAngleInput: 1
+--- !u!114 &8876931986481962414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7400000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 973176ed503ef67409b427ae3e9891b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  innerCircle: {fileID: 7400000000000007}
+  slowSpeed: 1.4
+  slowAmplitude: 0.18
+  fastSpeed: 8
+  fastAmplitude: 0.08
+  maxAmplitude: 0.22
+  rangeSpeed: 1.1
+  rangeAmplitude: 0.08
 --- !u!1 &7400000000000003
 GameObject:
   m_ObjectHideFlags: 0
