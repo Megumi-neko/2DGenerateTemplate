@@ -34,22 +34,22 @@ namespace Game.Combat
 
         private static readonly EnemyLevelStats[] DefaultLevels =
         {
-            new EnemyLevelStats(80f, 6f, 1.2f, 2),
-            new EnemyLevelStats(120f, 8f, 1.25f, 4),
-            new EnemyLevelStats(180f, 11f, 1.3f, 7),
-            new EnemyLevelStats(270f, 15f, 1.35f, 11),
-            new EnemyLevelStats(405f, 21f, 1.4f, 16),
-            new EnemyLevelStats(600f, 28f, 1.45f, 22)
+            new EnemyLevelStats(72f, 6f, 1.2f, 2),
+            new EnemyLevelStats(108f, 8f, 1.25f, 4),
+            new EnemyLevelStats(162f, 11f, 1.3f, 7),
+            new EnemyLevelStats(243f, 15f, 1.35f, 11),
+            new EnemyLevelStats(365f, 21f, 1.4f, 16),
+            new EnemyLevelStats(540f, 28f, 1.45f, 22)
         };
 
         [SerializeField] private EnemyLevelStats[] levels =
         {
-            new EnemyLevelStats(80f, 6f, 1.2f, 2),
-            new EnemyLevelStats(120f, 8f, 1.25f, 4),
-            new EnemyLevelStats(180f, 11f, 1.3f, 7),
-            new EnemyLevelStats(270f, 15f, 1.35f, 11),
-            new EnemyLevelStats(405f, 21f, 1.4f, 16),
-            new EnemyLevelStats(600f, 28f, 1.45f, 22)
+            new EnemyLevelStats(72f, 6f, 1.2f, 2),
+            new EnemyLevelStats(108f, 8f, 1.25f, 4),
+            new EnemyLevelStats(162f, 11f, 1.3f, 7),
+            new EnemyLevelStats(243f, 15f, 1.35f, 11),
+            new EnemyLevelStats(365f, 21f, 1.4f, 16),
+            new EnemyLevelStats(540f, 28f, 1.45f, 22)
         };
 
         public EnemyLevelStats Get(int threatLevel)

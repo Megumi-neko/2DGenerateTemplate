@@ -25,8 +25,8 @@ namespace Game.Lighting
         [SerializeField, Range(1f, LightGeometry2D.FullCircleAngle)] private float sectorAngle = 90f;
         [SerializeField, Range(LightGeometry2D.DefaultMinimumSectorAngle, LightGeometry2D.FullCircleAngle)] private float minimumSectorAngle = LightGeometry2D.DefaultMinimumSectorAngle;
         [SerializeField, Min(0f)] private float baseIntensity = 1f;
-        [SerializeField, Min(0f)] private float baseDamagePerSecond = 12f;
-        [SerializeField, Min(1f)] private float maximumFocusMultiplier = 2.25f;
+        [SerializeField, Min(0f)] private float baseDamagePerSecond = 6f;
+        [SerializeField, Min(1f)] private float maximumFocusMultiplier = 4f;
         [SerializeField, Min(0f)] private float edgeSoftness = 0.35f;
         [SerializeField, Range(0.01f, 0.99f)] private float innerRadiusMultiplier = 0.5f;
 
@@ -35,7 +35,7 @@ namespace Game.Lighting
         [SerializeField, Min(0f)] private float rangeUpgradeAmount = 0.25f;
         [SerializeField, Min(0)] private int maximumIntensityUpgradeLevel = 10;
         [SerializeField, Min(0f)] private float intensityUpgradeAmount = 0.075f;
-        [SerializeField, Min(0f)] private float damageUpgradeAmount = 0.9f;
+        [SerializeField, Min(0f)] private float damageUpgradeAmount = 0.5f;
         [SerializeField] private KeyCode rangeUpgradeKey = KeyCode.Alpha1;
         [SerializeField] private KeyCode intensityUpgradeKey = KeyCode.Alpha2;
 
@@ -77,6 +77,31 @@ namespace Game.Lighting
         public int IntensityUpgradeLevel => intensityUpgradeLevel;
         public int MaximumRangeUpgradeLevel => maximumRangeUpgradeLevel;
         public int MaximumIntensityUpgradeLevel => maximumIntensityUpgradeLevel;
+        public static event System.Action UpgradesChanged;
+
+        public static void TryGetUpgradeLevels(out int intensityLevel, out int rangeLevel)
+        {
+            intensityLevel = 0;
+            rangeLevel = 0;
+            int bestCombinedLevel = -1;
+            StageLightingBootstrap[] bootstraps = FindObjectsOfType<StageLightingBootstrap>();
+            for (int i = 0; i < bootstraps.Length; i++)
+            {
+                StageLightingBootstrap bootstrap = bootstraps[i];
+                if (bootstrap == null)
+                {
+                    continue;
+                }
+
+                int combinedLevel = bootstrap.IntensityUpgradeLevel + bootstrap.RangeUpgradeLevel;
+                if (combinedLevel > bestCombinedLevel)
+                {
+                    bestCombinedLevel = combinedLevel;
+                    intensityLevel = bootstrap.IntensityUpgradeLevel;
+                    rangeLevel = bootstrap.RangeUpgradeLevel;
+                }
+            }
+        }
         private void Awake()
         {
             EnsureCameraAndOverlay();
@@ -97,6 +122,7 @@ namespace Game.Lighting
             rangeUpgradeLevel++;
             RefreshCandleScale();
             cameraFramer?.ReframeImmediately();
+            UpgradesChanged?.Invoke();
             return true;
         }
 
@@ -112,6 +138,7 @@ namespace Game.Lighting
             intensityUpgradeLevel++;
             RefreshCandleScale();
             cameraFramer?.ReframeImmediately();
+            UpgradesChanged?.Invoke();
             return true;
         }
 

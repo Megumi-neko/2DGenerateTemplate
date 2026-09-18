@@ -1,5 +1,6 @@
 using Game.Building;
 using Game.DayNight;
+using Game.Lighting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -37,6 +38,7 @@ namespace Game.UI
         private void OnEnable()
         {
             EventBus.Instance.Subscribe<DayNightStateChanged>(OnDayNightStateChanged);
+            StageLightingBootstrap.UpgradesChanged += OnLightingUpgradesChanged;
             ResolveReferences();
             ConfigureLookoutTowerButton();
             ConfigureCrystalFactoryButton();
@@ -52,6 +54,7 @@ namespace Game.UI
         private void OnDisable()
         {
             EventBus.Instance.UnSubscribe<DayNightStateChanged>(OnDayNightStateChanged);
+            StageLightingBootstrap.UpgradesChanged -= OnLightingUpgradesChanged;
             CancelPlacement();
         }
 
@@ -266,6 +269,7 @@ namespace Game.UI
 
             lookoutTowerButton.onClick.RemoveListener(BeginLookoutTowerPlacement);
             lookoutTowerButton.onClick.AddListener(BeginLookoutTowerPlacement);
+            RefreshLookoutTowerLabel();
         }
 
         private void ConfigureCrystalFactoryButton()
@@ -312,6 +316,11 @@ namespace Game.UI
             FindObjectOfType<StageAudioController>()?.RebindButtons();
         }
 
+        private void OnLightingUpgradesChanged()
+        {
+            RefreshLookoutTowerLabel();
+        }
+
         private void RefreshLookoutTowerLabel()
         {
             if (lookoutTowerButton == null || lookoutTower == null)
@@ -319,10 +328,11 @@ namespace Game.UI
                 return;
             }
 
-            Text label = lookoutTowerButton.GetComponentInChildren<Text>();
+            Text label = lookoutTowerButton.GetComponentInChildren<Text>(true);
             if (label != null)
             {
-                label.text = $"{lookoutTower.DisplayName}\n{lookoutTower.CoinCost}";
+                StageLightingBootstrap.TryGetUpgradeLevels(out int qualityLevel, out int rangeLevel);
+                label.text = $"{lookoutTower.DisplayName}\n{lookoutTower.GetCoinCost(qualityLevel, rangeLevel)}";
             }
         }
 

@@ -35,13 +35,16 @@ namespace Game.Building
             Vector3Int cellPosition)
         {
             ResolveReferences();
+            StageLightingBootstrap.TryGetUpgradeLevels(out int qualityLevel, out int rangeLevel);
             BuildPlacementResult result = validator.Validate(
                 definition,
                 cellPosition,
                 dayNightSystem,
                 buildGrid,
                 coinInventory,
-                buildLight);
+                buildLight,
+                qualityLevel,
+                rangeLevel);
             LastFailureReason = result.Reason;
             return result;
         }
@@ -57,7 +60,8 @@ namespace Game.Building
                 return false;
             }
 
-            if (!coinInventory.TrySpend(definition.CoinCost))
+            int cost = GetCurrentCoinCost(definition);
+            if (!coinInventory.TrySpend(cost))
             {
                 LastFailureReason = BuildPlacementFailureReason.InsufficientCoins;
                 PublishPlacementFailed(definition, cellPosition, LastFailureReason);
@@ -77,7 +81,7 @@ namespace Game.Building
             if (instance == null)
             {
                 Destroy(instanceObject);
-                coinInventory.Add(definition.CoinCost);
+                coinInventory.Add(cost);
                 LastFailureReason = BuildPlacementFailureReason.MissingPrefab;
                 PublishPlacementFailed(definition, cellPosition, LastFailureReason);
                 return false;
@@ -87,7 +91,7 @@ namespace Game.Building
             if (!buildGrid.TryRegister(instance, cellPosition, definition.Footprint))
             {
                 Destroy(instanceObject);
-                coinInventory.Add(definition.CoinCost);
+                coinInventory.Add(cost);
                 LastFailureReason = BuildPlacementFailureReason.Occupied;
                 PublishPlacementFailed(definition, cellPosition, LastFailureReason);
                 return false;
@@ -196,6 +200,17 @@ namespace Game.Building
             {
                 buildLight = stageCandle;
             }
+        }
+
+        private static int GetCurrentCoinCost(BuildDefinition definition)
+        {
+            if (definition == null)
+            {
+                return 0;
+            }
+
+            StageLightingBootstrap.TryGetUpgradeLevels(out int qualityLevel, out int rangeLevel);
+            return definition.GetCoinCost(qualityLevel, rangeLevel);
         }
 
         private static void PublishPlacementFailed(

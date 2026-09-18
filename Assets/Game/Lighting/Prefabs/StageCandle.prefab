@@ -54,8 +54,8 @@ MonoBehaviour:
   minimumSectorAngle: 60
   direction: {x: 1, y: 0}
   baseIntensity: 1
-  baseDamagePerSecond: 10
-  maximumFocusMultiplier: 2.25
+  baseDamagePerSecond: 6
+  maximumFocusMultiplier: 4
   edgeSoftness: 0.35
   emitting: 1
   gizmoColor: {r: 1, g: 0.72, b: 0.2, a: 0.9}

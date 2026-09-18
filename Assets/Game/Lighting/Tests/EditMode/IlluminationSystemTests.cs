@@ -142,11 +142,38 @@ namespace Game.Lighting.Tests
             Assert.That(
                 inner.BaseDamagePerSecond,
                 Is.EqualTo(source.BaseDamagePerSecond).Within(0.0001f));
+            Assert.That(inner.MaximumFocusMultiplier, Is.EqualTo(1f));
+            Assert.That(inner.CurrentDamagePerSecond, Is.EqualTo(source.BaseDamagePerSecond).Within(0.0001f));
             Assert.That(inner.CurrentIntensity, Is.EqualTo(source.BaseIntensity).Within(0.0001f));
 
             source.SetEmitting(false);
             innerCircle.SynchronizeNow();
             Assert.That(inner.IsEmitting, Is.False);
+        }
+
+        [Test]
+        public void InnerCircle_StacksBaseDamageWithoutOuterFocus()
+        {
+            LightEmitter2D source = CreateEmitter(Vector2.zero, 4f, 1f, 6f);
+            source.Shape = LightShape2D.Sector;
+            source.MinimumSectorAngle = 20f;
+            source.SectorAngle = 20f;
+            source.MaximumFocusMultiplier = 4f;
+            source.EdgeSoftness = 0f;
+
+            InnerCircleLight2D innerCircle = source.gameObject.AddComponent<InnerCircleLight2D>();
+            innerCircle.RadiusMultiplier = 0.5f;
+            innerCircle.SynchronizeNow();
+            LightEmitter2D inner = innerCircle.InnerEmitter;
+            inner.EdgeSoftness = 0f;
+
+            IlluminationSample insideInner = IlluminationSystem.Sample(Vector2.zero);
+            IlluminationSample outsideInner = IlluminationSystem.Sample(new Vector2(3f, 0f));
+
+            Assert.That(source.CurrentDamagePerSecond, Is.EqualTo(24f).Within(0.0001f));
+            Assert.That(inner.CurrentDamagePerSecond, Is.EqualTo(6f).Within(0.0001f));
+            Assert.That(insideInner.DamagePerSecond, Is.EqualTo(12f).Within(0.0001f));
+            Assert.That(outsideInner.DamagePerSecond, Is.EqualTo(24f).Within(0.0001f));
         }
 
         [Test]
@@ -349,7 +376,7 @@ namespace Game.Lighting.Tests
 
             Assert.That(bootstrap.UpgradeIntensity(), Is.True);
             Assert.That(bootstrap.CandleEmitter.BaseIntensity, Is.EqualTo(initialIntensity + 0.075f));
-            Assert.That(bootstrap.CandleEmitter.BaseDamagePerSecond, Is.EqualTo(initialDamage + 0.9f));
+            Assert.That(bootstrap.CandleEmitter.BaseDamagePerSecond, Is.EqualTo(initialDamage + 0.5f));
             Assert.That(bootstrap.IntensityUpgradeLevel, Is.EqualTo(1));
         }
 

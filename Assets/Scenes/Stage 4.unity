@@ -210459,15 +210459,15 @@ MonoBehaviour:
   sectorAngle: 90
   minimumSectorAngle: 20
   baseIntensity: 1
-  baseDamagePerSecond: 12
-  maximumFocusMultiplier: 2.25
+  baseDamagePerSecond: 6
+  maximumFocusMultiplier: 4
   edgeSoftness: 0.35
   innerRadiusMultiplier: 0.5
   maximumRangeUpgradeLevel: 10
   rangeUpgradeAmount: 0.25
   maximumIntensityUpgradeLevel: 10
   intensityUpgradeAmount: 0.075
-  damageUpgradeAmount: 0.9
+  damageUpgradeAmount: 0.5
   rangeUpgradeKey: 49
   intensityUpgradeKey: 50
   candleVisualPrefab: {fileID: 0}
@@ -228588,9 +228588,9 @@ MonoBehaviour:
   spawnVerticalJitter: 1
   prewarmCount: 8
   poolCapacity: 40
-  bossHealthMultiplier: 4.5
-  bossAttackMultiplier: 1.8
-  bossCoinRewardMultiplier: 2
+  bossHealthMultiplier: 4
+  bossAttackMultiplier: 1.5
+  bossCoinRewardMultiplier: 3
 --- !u!4 &2100490230
 Transform:
   m_ObjectHideFlags: 0
@@ -230522,9 +230522,9 @@ MonoBehaviour:
   rangeUpgradeLevel: 0
   maximumUpgradeLevel: 10
   upgradeCosts: 140000001e0000002d000000410000005a000000780000009b000000c3000000f000000022010000
-  baseMaxHealth: 500
+  baseMaxHealth: 200
   maxHealthPerQualityLevel: 70
-  baseAttackDamage: 15
+  baseAttackDamage: 16
   attackDamagePerQualityLevel: 3
   baseAttackRange: 4
   attackRangePerLevel: 0.25
@@ -230542,8 +230542,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 561d0ab309d0ffe4b8d5d6851b98bebc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 500
-  currentHealth: 500
+  maxHealth: 200
+  currentHealth: 200
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

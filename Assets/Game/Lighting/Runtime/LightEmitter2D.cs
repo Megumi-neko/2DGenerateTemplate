@@ -19,8 +19,8 @@ namespace Game.Lighting
 
         [Header("Output")]
         [SerializeField, Min(0f)] private float baseIntensity = 1f;
-        [SerializeField, Min(0f)] private float baseDamagePerSecond = 10f;
-        [SerializeField, Min(1f)] private float maximumFocusMultiplier = 2.25f;
+        [SerializeField, Min(0f)] private float baseDamagePerSecond = 6f;
+        [SerializeField, Min(1f)] private float maximumFocusMultiplier = 4f;
         [SerializeField, Min(0f)] private float edgeSoftness = 0.35f;
         [SerializeField] private bool emitting = true;
 

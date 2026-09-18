@@ -63,7 +63,7 @@ namespace Game.Lighting
 
                 sourceCount++;
                 float intensity = emitter.CurrentIntensity * influence;
-                totalDamagePerSecond += emitter.CurrentDamagePerSecond * influence;
+                totalDamagePerSecond += GetDamagePerSecond(emitter, worldPosition, influence);
 
                 if (strongestSource == null || intensity > strongestIntensity)
                 {
@@ -152,6 +152,25 @@ namespace Game.Lighting
         public static float GetDamagePerSecond(Vector2 worldPosition)
         {
             return Sample(worldPosition).DamagePerSecond;
+        }
+
+        private static float GetDamagePerSecond(
+            LightEmitter2D emitter,
+            Vector2 worldPosition,
+            float influence)
+        {
+            float damagePerSecond = emitter.CurrentDamagePerSecond;
+            InnerCircleLight2D innerCircle = emitter.GetComponent<InnerCircleLight2D>();
+            LightEmitter2D innerEmitter = innerCircle == null ? null : innerCircle.InnerEmitter;
+            if (innerEmitter != null &&
+                innerEmitter.IsOperational &&
+                innerEmitter.EvaluateInfluence(worldPosition) > ContributionThreshold)
+            {
+                // Inner circle can stack with the outer light, but never inherits focus.
+                damagePerSecond = emitter.BaseDamagePerSecond;
+            }
+
+            return damagePerSecond * influence;
         }
 
         internal static void Register(LightEmitter2D emitter)

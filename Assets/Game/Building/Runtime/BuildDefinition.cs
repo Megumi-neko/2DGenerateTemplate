@@ -29,6 +29,11 @@ namespace Game.Building
         [SerializeField, Min(1)] private int coinProductionAmount = 1;
         [SerializeField, Min(0.1f)] private float coinProductionInterval = 10f;
 
+        public const int CoinCostPerCombinedUpgradeLevel = 1;
+        public const float LightRadiusPerRangeLevel = 0.25f;
+        public const float LightIntensityPerQualityLevel = 0.075f;
+        public const float LightDamagePerQualityLevel = 0.5f;
+
         public string BuildingId => buildingId;
         public string DisplayName => displayName;
         public GameObject Prefab => prefab;
@@ -45,6 +50,49 @@ namespace Game.Building
         public bool CoinProductionAtNightOnly => coinProductionAtNightOnly;
         public int CoinProductionAmount => coinProductionAmount;
         public float CoinProductionInterval => coinProductionInterval;
+
+        public int GetCoinCost(int qualityLevel, int rangeLevel)
+        {
+            if (!emitsNightLight)
+            {
+                return coinCost;
+            }
+
+            int extraLevels = Mathf.Max(0, Mathf.Max(0, qualityLevel) + Mathf.Max(0, rangeLevel) - 1);
+            long cost = (long)coinCost + extraLevels * (long)CoinCostPerCombinedUpgradeLevel;
+            return cost > int.MaxValue ? int.MaxValue : (int)cost;
+        }
+
+        public float GetLightRadius(int rangeLevel)
+        {
+            if (!emitsNightLight)
+            {
+                return lightRadius;
+            }
+
+            return Mathf.Max(0.01f, lightRadius + LightRadiusPerRangeLevel * Mathf.Max(0, rangeLevel));
+        }
+
+        public float GetLightIntensity(int qualityLevel)
+        {
+            if (!emitsNightLight)
+            {
+                return lightIntensity;
+            }
+
+            return Mathf.Max(0f, lightIntensity + LightIntensityPerQualityLevel * Mathf.Max(0, qualityLevel));
+        }
+
+        public float GetLightDamagePerSecond(int qualityLevel)
+        {
+            float damagePerSecond = lightDamagePerSecond;
+            if (emitsNightLight)
+            {
+                damagePerSecond += LightDamagePerQualityLevel * Mathf.Max(0, qualityLevel);
+            }
+
+            return Mathf.Min(Mathf.Max(0f, damagePerSecond), lightDamageCap);
+        }
 
         private void OnValidate()
         {

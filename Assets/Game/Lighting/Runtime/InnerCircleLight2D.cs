@@ -137,7 +137,7 @@ namespace Game.Lighting
             innerEmitter.BaseIntensity = sourceEmitter.BaseIntensity;
             innerEmitter.BaseDamagePerSecond = sourceEmitter.BaseDamagePerSecond;
             innerEmitter.EdgeSoftness = sourceEmitter.EdgeSoftness;
-            innerEmitter.MaximumFocusMultiplier = sourceEmitter.MaximumFocusMultiplier;
+            innerEmitter.MaximumFocusMultiplier = 1f;
             innerEmitter.Direction = sourceEmitter.Direction;
             innerEmitter.SetEmitting(sourceEmitter.IsEmitting && sourceEmitter.isActiveAndEnabled);
         }

@@ -22,7 +22,7 @@ namespace Game.Combat.Tests
         public void DefaultStats_IncreaseHealthAndAttackAcrossLevels()
         {
             EnemyLevelStats previous = EnemyStats.GetDefault(1);
-            Assert.That(previous.MaxHealth, Is.EqualTo(80f));
+            Assert.That(previous.MaxHealth, Is.EqualTo(72f));
             for (int level = 2; level <= EnemyStats.MaximumThreatLevel; level++)
             {
                 EnemyLevelStats current = EnemyStats.GetDefault(level);
@@ -125,22 +125,22 @@ namespace Game.Combat.Tests
             Health health = towerObject.AddComponent<Health>();
             MainTower tower = towerObject.AddComponent<MainTower>();
 
-            Assert.That(tower.AttackDamage, Is.EqualTo(15f));
+            Assert.That(tower.AttackDamage, Is.EqualTo(16f));
             Assert.That(tower.AttackRange, Is.EqualTo(4f));
-            Assert.That(health.MaxHealth, Is.EqualTo(500f));
+            Assert.That(health.MaxHealth, Is.EqualTo(200f));
 
             health.TakeDamage(100f);
             Assert.That(tower.UpgradeRange(), Is.True);
             Assert.That(tower.RangeUpgradeLevel, Is.EqualTo(1));
             Assert.That(tower.QualityUpgradeLevel, Is.Zero);
             Assert.That(tower.AttackRange, Is.EqualTo(4.25f).Within(0.0001f));
-            Assert.That(tower.AttackDamage, Is.EqualTo(15f));
+            Assert.That(tower.AttackDamage, Is.EqualTo(16f));
 
             Assert.That(tower.UpgradeQuality(), Is.True);
             Assert.That(tower.QualityUpgradeLevel, Is.EqualTo(1));
-            Assert.That(tower.AttackDamage, Is.EqualTo(18f));
-            Assert.That(health.MaxHealth, Is.EqualTo(570f));
-            Assert.That(health.CurrentHealth, Is.EqualTo(470f));
+            Assert.That(tower.AttackDamage, Is.EqualTo(19f));
+            Assert.That(health.MaxHealth, Is.EqualTo(270f));
+            Assert.That(health.CurrentHealth, Is.EqualTo(170f));
 
             Object.DestroyImmediate(towerObject);
         }
@@ -162,9 +162,9 @@ namespace Game.Combat.Tests
             Assert.That(tower.UpgradeRange(), Is.False);
             Assert.That(tower.QualityUpgradeLevel, Is.EqualTo(10));
             Assert.That(tower.RangeUpgradeLevel, Is.EqualTo(10));
-            Assert.That(tower.AttackDamage, Is.EqualTo(45f));
+            Assert.That(tower.AttackDamage, Is.EqualTo(46f));
             Assert.That(tower.AttackRange, Is.EqualTo(6.5f).Within(0.0001f));
-            Assert.That(tower.Health.MaxHealth, Is.EqualTo(1200f));
+            Assert.That(tower.Health.MaxHealth, Is.EqualTo(900f));
 
             Object.DestroyImmediate(towerObject);
         }
@@ -249,9 +249,9 @@ namespace Game.Combat.Tests
             EnemyLevelStats levelOne = EnemyStats.GetDefault(1);
             EnemyLevelStats levelSix = EnemyStats.GetDefault(6);
 
-            Assert.That(levelOne.MaxHealth, Is.EqualTo(80f));
+            Assert.That(levelOne.MaxHealth, Is.EqualTo(72f));
             Assert.That(levelOne.AttackDamage, Is.EqualTo(6f));
-            Assert.That(levelSix.MaxHealth, Is.EqualTo(600f));
+            Assert.That(levelSix.MaxHealth, Is.EqualTo(540f));
             Assert.That(levelSix.AttackDamage, Is.EqualTo(28f));
         }
 

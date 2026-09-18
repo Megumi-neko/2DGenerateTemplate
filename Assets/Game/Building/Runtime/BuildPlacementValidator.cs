@@ -46,7 +46,9 @@ namespace Game.Building
             DayNightSystem dayNightSystem,
             BuildGrid buildGrid,
             CoinInventory coinInventory,
-            LightEmitter2D buildLight)
+            LightEmitter2D buildLight,
+            int qualityLevel = 0,
+            int rangeLevel = 0)
         {
             if (definition == null)
             {
@@ -110,7 +112,7 @@ namespace Game.Building
                 return Invalid(BuildPlacementFailureReason.MissingInventory);
             }
 
-            if (!coinInventory.CanSpend(definition.CoinCost))
+            if (!coinInventory.CanSpend(definition.GetCoinCost(qualityLevel, rangeLevel)))
             {
                 return Invalid(BuildPlacementFailureReason.InsufficientCoins);
             }

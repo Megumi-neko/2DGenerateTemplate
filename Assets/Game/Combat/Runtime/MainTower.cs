@@ -15,9 +15,9 @@ namespace Game.Combat
         [SerializeField] private int[] upgradeCosts = { 20, 30, 45, 65, 90, 120, 155, 195, 240, 290 };
 
         [Header("Quality Growth")]
-        [SerializeField, Min(1f)] private float baseMaxHealth = 500f;
+        [SerializeField, Min(1f)] private float baseMaxHealth = 200f;
         [SerializeField, Min(0f)] private float maxHealthPerQualityLevel = 70f;
-        [SerializeField, Min(0f)] private float baseAttackDamage = 15f;
+        [SerializeField, Min(0f)] private float baseAttackDamage = 16f;
         [SerializeField, Min(0f)] private float attackDamagePerQualityLevel = 3f;
 
         [Header("Height Growth")]

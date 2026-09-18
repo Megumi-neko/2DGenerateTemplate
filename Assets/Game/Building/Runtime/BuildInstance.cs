@@ -20,23 +20,31 @@ namespace Game.Building
         private BuildingHealthBar healthBar;
         private LightEmitter2D lightEmitter;
         private float productionTimer;
+        private bool lightingUpgradesSubscribed;
 
         public BuildingHealth BuildingHealth => buildingHealth;
         public LightEmitter2D LightEmitter => lightEmitter;
 
         private void Awake()
         {
-            buildingHealth = GetComponent<BuildingHealth>();
+            EnsureVitalityComponents();
+        }
+
+        private void EnsureVitalityComponents()
+        {
+            if (buildingHealth == null) buildingHealth = GetComponent<BuildingHealth>();
             if (buildingHealth == null) buildingHealth = gameObject.AddComponent<BuildingHealth>();
-            healthBar = GetComponent<BuildingHealthBar>();
+            if (healthBar == null) healthBar = GetComponent<BuildingHealthBar>();
             if (healthBar == null) healthBar = gameObject.AddComponent<BuildingHealthBar>();
             healthBar.Initialize(buildingHealth);
+            buildingHealth.Died -= OnBuildingDied;
             buildingHealth.Died += OnBuildingDied;
         }
 
         private void OnEnable()
         {
             EventBus.Instance.Subscribe<DayNightStateChanged>(OnDayNightStateChanged);
+            SubscribeLightingUpgrades();
             UpdateNightLight();
         }
 
@@ -44,6 +52,7 @@ namespace Game.Building
         {
             if (buildingHealth != null) buildingHealth.Died -= OnBuildingDied;
             EventBus.Instance.UnSubscribe<DayNightStateChanged>(OnDayNightStateChanged);
+            UnsubscribeLightingUpgrades();
             if (lightEmitter != null) Destroy(lightEmitter);
         }
 
@@ -52,18 +61,41 @@ namespace Game.Building
             if (!IsInitialized || Definition == null) return;
             if (lightEmitter == null) lightEmitter = GetComponent<LightEmitter2D>();
             if (lightEmitter == null) lightEmitter = gameObject.AddComponent<LightEmitter2D>();
+            StageLightingBootstrap.TryGetUpgradeLevels(out int qualityLevel, out int rangeLevel);
             lightEmitter.Shape = LightShape2D.Circle;
-            lightEmitter.BaseRadius = Definition.LightRadius;
-            lightEmitter.BaseIntensity = Definition.LightIntensity;
-            lightEmitter.BaseDamagePerSecond = Mathf.Min(
-                Definition.LightDamagePerSecond,
-                Definition.LightDamageCap);
+            lightEmitter.BaseRadius = Definition.GetLightRadius(rangeLevel);
+            lightEmitter.BaseIntensity = Definition.GetLightIntensity(qualityLevel);
+            lightEmitter.BaseDamagePerSecond = Definition.GetLightDamagePerSecond(qualityLevel);
             DayNightSystem dayNight = FindObjectOfType<DayNightSystem>();
             lightEmitter.SetEmitting(Definition.EmitsNightLight && buildingHealth != null && !buildingHealth.IsDead &&
                 (dayNight == null || dayNight.CurrentPhase == DayNightPhase.Night));
         }
 
         private void OnDayNightStateChanged(DayNightStateChanged state) { UpdateNightLight(); }
+        private void OnLightingUpgradesChanged() { UpdateNightLight(); }
+
+        private void SubscribeLightingUpgrades()
+        {
+            if (lightingUpgradesSubscribed)
+            {
+                return;
+            }
+
+            StageLightingBootstrap.UpgradesChanged += OnLightingUpgradesChanged;
+            lightingUpgradesSubscribed = true;
+        }
+
+        private void UnsubscribeLightingUpgrades()
+        {
+            if (!lightingUpgradesSubscribed)
+            {
+                return;
+            }
+
+            StageLightingBootstrap.UpgradesChanged -= OnLightingUpgradesChanged;
+            lightingUpgradesSubscribed = false;
+        }
+
         private bool IsNight()
         {
             DayNightSystem system = FindObjectOfType<DayNightSystem>();
@@ -127,11 +159,12 @@ namespace Game.Building
             IsInitialized = definition != null;
             if (IsInitialized)
             {
-                if (buildingHealth == null) buildingHealth = GetComponent<BuildingHealth>();
-                buildingHealth?.ResetHealth(definition.MaxHealth);
-                healthBar?.SetOffset(definition.BuildingId == "crystal_factory"
+                EnsureVitalityComponents();
+                buildingHealth.ResetHealth(definition.MaxHealth);
+                healthBar.SetOffset(definition.BuildingId == "crystal_factory"
                     ? new Vector3(-0.02f, 1.1f, 0f)
                     : new Vector3(0.06f, 1.1f, 0f));
+                SubscribeLightingUpgrades();
                 UpdateNightLight();
             }
         }
@@ -144,6 +177,7 @@ namespace Game.Building
         private void OnDisable()
         {
             productionTimer = 0f;
+            UnsubscribeLightingUpgrades();
         }
     }
 }

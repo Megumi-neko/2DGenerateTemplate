@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using Game.DayNight;
 using Game.Lighting;
 using NUnit.Framework;
@@ -143,6 +144,115 @@ namespace Game.Building.Tests
             Assert.That(fixture.system.LastFailureReason,
                 Is.EqualTo(BuildPlacementFailureReason.MissingBuildLight));
             Assert.That(fixture.inventory.Coins, Is.EqualTo(20));
+        }
+
+        [Test]
+        public void LookoutDefinition_ScalesCostAndLightWithUpgradeLevels()
+        {
+            BuildDefinition definition = ScriptableObject.CreateInstance<BuildDefinition>();
+            createdObjects.Add(definition);
+
+            Assert.That(definition.GetCoinCost(0, 0), Is.EqualTo(10));
+            Assert.That(definition.GetCoinCost(1, 0), Is.EqualTo(10));
+            Assert.That(definition.GetCoinCost(0, 1), Is.EqualTo(10));
+            Assert.That(definition.GetCoinCost(2, 0), Is.EqualTo(11));
+            Assert.That(definition.GetCoinCost(5, 5), Is.EqualTo(19));
+            Assert.That(definition.GetCoinCost(10, 10), Is.EqualTo(29));
+
+            Assert.That(definition.GetLightRadius(0), Is.EqualTo(2.5f).Within(0.0001f));
+            Assert.That(definition.GetLightRadius(1), Is.EqualTo(2.75f).Within(0.0001f));
+            Assert.That(definition.GetLightRadius(5), Is.EqualTo(3.75f).Within(0.0001f));
+            Assert.That(definition.GetLightRadius(10), Is.EqualTo(5f).Within(0.0001f));
+
+            Assert.That(definition.GetLightIntensity(0), Is.EqualTo(0.8f).Within(0.0001f));
+            Assert.That(definition.GetLightIntensity(1), Is.EqualTo(0.875f).Within(0.0001f));
+            Assert.That(definition.GetLightIntensity(5), Is.EqualTo(1.175f).Within(0.0001f));
+            Assert.That(definition.GetLightIntensity(10), Is.EqualTo(1.55f).Within(0.0001f));
+
+            Assert.That(definition.GetLightDamagePerSecond(0), Is.EqualTo(3f).Within(0.0001f));
+            Assert.That(definition.GetLightDamagePerSecond(1), Is.EqualTo(3.5f).Within(0.0001f));
+            Assert.That(definition.GetLightDamagePerSecond(5), Is.EqualTo(5.5f).Within(0.0001f));
+            Assert.That(definition.GetLightDamagePerSecond(10), Is.EqualTo(8f).Within(0.0001f));
+            Assert.That(definition.GetLightDamagePerSecond(10), Is.LessThanOrEqualTo(definition.LightDamageCap));
+        }
+
+        [Test]
+        public void FactoryDefinition_IgnoresUpgradeLevels()
+        {
+            BuildDefinition definition = ScriptableObject.CreateInstance<BuildDefinition>();
+            createdObjects.Add(definition);
+            SetPrivateField(definition, "emitsNightLight", false);
+            SetPrivateField(definition, "coinCost", 20);
+            SetPrivateField(definition, "lightRadius", 0.01f);
+            SetPrivateField(definition, "lightIntensity", 0f);
+            SetPrivateField(definition, "lightDamagePerSecond", 0f);
+            SetPrivateField(definition, "lightDamageCap", 0f);
+
+            Assert.That(definition.GetCoinCost(10, 10), Is.EqualTo(20));
+            Assert.That(definition.GetLightRadius(10), Is.EqualTo(0.01f).Within(0.0001f));
+            Assert.That(definition.GetLightIntensity(10), Is.EqualTo(0f).Within(0.0001f));
+            Assert.That(definition.GetLightDamagePerSecond(10), Is.EqualTo(0f).Within(0.0001f));
+        }
+
+        [Test]
+        public void TryPlace_KeepsBaseLookoutCostAfterFirstUpgrade()
+        {
+            BuildFixture fixture = CreateFixture(20);
+            StageLightingBootstrap bootstrap = CreateLightingBootstrap();
+            Assert.That(bootstrap.UpgradeIntensity(), Is.True);
+
+            Assert.That(fixture.system.TryPlace(fixture.definition, new Vector3Int(2, 2, 0)), Is.True);
+            Assert.That(fixture.inventory.Coins, Is.EqualTo(10));
+        }
+
+        [Test]
+        public void TryPlace_SpendsScaledLookoutCostAfterSecondUpgrade()
+        {
+            BuildFixture fixture = CreateFixture(20);
+            StageLightingBootstrap bootstrap = CreateLightingBootstrap();
+            Assert.That(bootstrap.UpgradeIntensity(), Is.True);
+            Assert.That(bootstrap.UpgradeIntensity(), Is.True);
+
+            Assert.That(fixture.system.TryPlace(fixture.definition, new Vector3Int(2, 2, 0)), Is.True);
+            Assert.That(fixture.inventory.Coins, Is.EqualTo(9));
+        }
+
+        [Test]
+        public void TryPlace_RejectsInsufficientScaledLookoutCostWithoutCreatingObject()
+        {
+            BuildFixture fixture = CreateFixture(10);
+            StageLightingBootstrap bootstrap = CreateLightingBootstrap();
+            Assert.That(bootstrap.UpgradeIntensity(), Is.True);
+            Assert.That(bootstrap.UpgradeIntensity(), Is.True);
+
+            Assert.That(fixture.system.TryPlace(fixture.definition, new Vector3Int(2, 2, 0)), Is.False);
+            Assert.That(fixture.inventory.Coins, Is.EqualTo(10));
+            Assert.That(fixture.system.Builds, Is.Empty);
+            Assert.That(fixture.system.LastFailureReason,
+                Is.EqualTo(BuildPlacementFailureReason.InsufficientCoins));
+        }
+
+        [Test]
+        public void PlacedLookout_RefreshesLightStatsWhenLightingUpgrades()
+        {
+            BuildFixture fixture = CreateFixture(20);
+            Assert.That(fixture.system.TryPlace(fixture.definition, new Vector3Int(2, 2, 0)), Is.True);
+
+            LightEmitter2D emitter = fixture.system.Builds[0].LightEmitter;
+            Assert.That(emitter.BaseRadius, Is.EqualTo(2.5f).Within(0.0001f));
+            Assert.That(emitter.BaseIntensity, Is.EqualTo(0.8f).Within(0.0001f));
+            Assert.That(emitter.BaseDamagePerSecond, Is.EqualTo(3f).Within(0.0001f));
+
+            StageLightingBootstrap bootstrap = CreateLightingBootstrap();
+            Assert.That(bootstrap.UpgradeIntensity(), Is.True);
+            Assert.That(emitter.BaseRadius, Is.EqualTo(2.5f).Within(0.0001f));
+            Assert.That(emitter.BaseIntensity, Is.EqualTo(0.875f).Within(0.0001f));
+            Assert.That(emitter.BaseDamagePerSecond, Is.EqualTo(3.5f).Within(0.0001f));
+
+            Assert.That(bootstrap.UpgradeRange(), Is.True);
+            Assert.That(emitter.BaseRadius, Is.EqualTo(2.75f).Within(0.0001f));
+            Assert.That(emitter.BaseIntensity, Is.EqualTo(0.875f).Within(0.0001f));
+            Assert.That(emitter.BaseDamagePerSecond, Is.EqualTo(3.5f).Within(0.0001f));
         }
 
         [Test]
@@ -365,10 +475,41 @@ namespace Game.Building.Tests
             BuildDefinition definition,
             GameObject prefab)
         {
-            typeof(BuildDefinition)
-                .GetField("prefab", System.Reflection.BindingFlags.Instance |
-                    System.Reflection.BindingFlags.NonPublic)
-                .SetValue(definition, prefab);
+            SetPrivateField(definition, "prefab", prefab);
+        }
+
+        private static void SetPrivateField<T>(T target, string fieldName, object value)
+        {
+            FieldInfo field = typeof(T).GetField(
+                fieldName,
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(field, Is.Not.Null, $"Missing private field '{fieldName}'.");
+            field.SetValue(target, value);
+        }
+
+        private static void InvokePrivateMethod<T>(T target, string methodName)
+        {
+            MethodInfo method = typeof(T).GetMethod(
+                methodName,
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(method, Is.Not.Null, $"Missing private method '{methodName}'.");
+            method.Invoke(target, null);
+        }
+
+        private StageLightingBootstrap CreateLightingBootstrap()
+        {
+            GameObject bootstrapObject = CreateObject("Lookout Lighting Bootstrap");
+            StageLightingBootstrap bootstrap = bootstrapObject.AddComponent<StageLightingBootstrap>();
+            GameObject candle = CreateObject("Lookout Central Candle");
+            candle.transform.SetParent(bootstrapObject.transform, false);
+            candle.AddComponent<LightEmitter2D>();
+            candle.AddComponent<InnerCircleLight2D>();
+            candle.AddComponent<CandleFocusController>();
+            SetPrivateField(bootstrap, "centralCandle", candle);
+            SetPrivateField(bootstrap, "initialShape", LightShape2D.Circle);
+            SetPrivateField(bootstrap, "baseRadius", 100f);
+            InvokePrivateMethod(bootstrap, "EnsureCandle");
+            return bootstrap;
         }
 
         private void OnBuildPlaced(BuildPlaced placed)

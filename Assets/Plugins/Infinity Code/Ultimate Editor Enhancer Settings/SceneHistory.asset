@@ -15,10 +15,10 @@ MonoBehaviour:
   _items:
   - name: Stage 4
     path: Assets/Scenes/Stage 4.unity
-  - name: MainMenu
-    path: Assets/Scenes/MainMenu.unity
   - name: End
     path: Assets/Scenes/End.unity
+  - name: MainMenu
+    path: Assets/Scenes/MainMenu.unity
   - name: MainMenu
     path: Assets/Scenes/MainMenu.unity
   - name: MainMenu

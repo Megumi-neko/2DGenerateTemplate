@@ -108,7 +108,7 @@ namespace Game.Lighting.Demo
             ControlledLight.Shape = LightShape2D.Sector;
             ControlledLight.MinimumSectorAngle = 60f;
             ControlledLight.SectorAngle = 90f;
-            ControlledLight.MaximumFocusMultiplier = 2.25f;
+            ControlledLight.MaximumFocusMultiplier = 4f;
             ControlledLight.Direction = Vector2.right;
 
             InnerCircleLight2D innerCircle = ControlledLight.gameObject.AddComponent<InnerCircleLight2D>();
